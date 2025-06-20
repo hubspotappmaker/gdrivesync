@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     const { access_token, refresh_token, expires_in, token_type } = response.data;
 
-    // ✅ Ghi token vào file database.json
+   
     const dataToWrite = {
       access_token,
       refresh_token,
@@ -36,11 +36,6 @@ export default async function handler(req, res) {
       token_type,
       timestamp: new Date().toISOString(),
     };
-
-    // lưu vào db thay thế nhé 
-    
-    const dbPath = path.join(process.cwd(), 'pages', 'database.json');
-    fs.writeFileSync(dbPath, JSON.stringify(dataToWrite, null, 2), 'utf-8');
 
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
     const redirectClient = '/driverootpicker';

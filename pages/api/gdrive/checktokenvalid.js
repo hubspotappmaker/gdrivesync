@@ -1,6 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
+import axios from 'axios';
 
 // Làm mới access_token bằng refresh_token
 async function refreshAccessToken(refresh_token, client_id, client_secret) {
@@ -17,60 +15,125 @@ async function refreshAccessToken(refresh_token, client_id, client_secret) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       }
     );
-
     return res.data;
   } catch (error) {
     throw new Error(`Không thể làm mới token: ${JSON.stringify(error.response?.data || error.message)}`);
   }
 }
 
+// Lấy token từ DB API
+async function getCredentials(portalId) {
+  try {
+    const res = await fetch('https://gdrive.onextdigital.com/api/db/get', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hubId: portalId }),
+    });
+
+    const json = await res.json();
+    const tokenData = json?.data?.token || {};
+    const folderId = json?.data?.folder_id || null;
+    const email = json?.data?.email || 'unknown';
+
+    return {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      clientId: tokenData.client_id,
+      clientSecret: tokenData.client_secret,
+      folderId,
+      email
+    };
+  } catch (error) {
+    console.error('Lỗi khi lấy credentials:', error);
+    return {};
+  }
+}
+
+// Gửi lại dữ liệu mới về DB
+async function updateCredentials(portalId, accessToken, refreshToken, folderId, email) {
+  try {
+    const res = await fetch('https://gdrive.onextdigital.com/api/db/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hub_id: portalId,
+        email: email,
+        installed_date: new Date().toISOString(),
+        token: {
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_in: 'default',
+          token_type: 'Bearer',
+          client_id: 'hidden',
+          client_secret: 'hidden',
+        },
+        folder_id: folderId,
+      }),
+    });
+
+    const result = await res.json();
+    console.log('✅ Token mới đã lưu vào DB:', result);
+  } catch (err) {
+    console.error('❌ Lỗi khi lưu token mới:', err.message);
+  }
+}
+
+// ✅ API chính
 export default async function handler(req, res) {
-  const dbPath = path.join(process.cwd(), 'pages', 'database.json');
-  const configPath = path.join(process.cwd(), 'config.json'); // ngoài thư mục pages
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, message: 'Phương thức không hỗ trợ' });
+  }
+
+  const { portalId } = req.query;
+  if (!portalId) {
+    return res.status(400).json({ success: false, message: 'Thiếu portalId' });
+  }
 
   try {
-    if (!fs.existsSync(dbPath)) {
-      return res.status(500).json({ success: false, message: 'Không tìm thấy database.json' });
-    }
-    if (!fs.existsSync(configPath)) {
-      return res.status(500).json({ success: false, message: 'Không tìm thấy config.json' });
-    }
+    const {
+      accessToken,
+      refreshToken,
+      clientId,
+      clientSecret,
+      folderId,
+      email
+    } = await getCredentials(portalId);
 
-    const tokenData = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
-    const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    const { access_token, refresh_token } = tokenData;
-    const { client_id, client_secret } = configData.api; // 👈 Lấy đúng từ config.api
-
-    if (!access_token) {
-      return res.status(400).json({ success: false, message: 'Không có access_token trong file.' });
+    if (!accessToken) {
+      return res.status(400).json({ success: false, message: 'Không có access_token' });
     }
 
     try {
-      const result = await axios.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${access_token}`);
-      return res.status(200).json({ success: true, valid: true, data: result.data });
+      await axios.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+      return res.status(200).json({
+        success: true,
+        valid: true,
+        access_token: accessToken,
+        folder_id: folderId,
+      });
     } catch (err) {
       console.warn('⚠️ Token không hợp lệ, thử làm mới...');
     }
 
-    if (!refresh_token || !client_id || !client_secret) {
-      return res.status(400).json({ success: false, message: 'Thiếu refresh_token hoặc client info.' });
+    if (!refreshToken || !clientId || !clientSecret) {
+      return res.status(400).json({ success: false, message: 'Không có refresh_token hoặc client credentials' });
     }
 
-    const refreshed = await refreshAccessToken(refresh_token, client_id, client_secret);
-    tokenData.access_token = refreshed.access_token;
+    const refreshed = await refreshAccessToken(refreshToken, clientId, clientSecret);
+    const newAccessToken = refreshed.access_token;
 
-    fs.writeFileSync(dbPath, JSON.stringify(tokenData, null, 2));
-
-    // Ghi chỗ này vào lại database
+    // Lưu lại token mới
+    await updateCredentials(portalId, newAccessToken, refreshToken, folderId, email);
 
     return res.status(200).json({
       success: true,
       refreshed: true,
-      access_token: refreshed.access_token,
+      access_token: newAccessToken,
+      folder_id: folderId,
     });
 
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Lỗi xử lý', error: err.message });
+    console.error('❌ Lỗi xử lý:', err.message);
+    return res.status(500).json({ success: false, message: 'Lỗi xử lý token', error: err.message });
   }
 }

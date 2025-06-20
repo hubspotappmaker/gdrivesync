@@ -7,7 +7,7 @@ import handleGoogleDriveShortcutLink from "./HandleGoogleDriveShortcutLink";
 
 const PlayBookFiles = () => {
   const router = useRouter();
-  const { portalId, objectId,folderId } = router.query;
+  const { portalId, folderId } = router.query;
 
   const teamDriveId = config.directory.team_drive;
   const corpora = teamDriveId ? "teamDrive" : "allDrives";
@@ -155,7 +155,7 @@ const PlayBookFiles = () => {
       if (err.response?.status === 401) {
         handleAccessTokenExpiration();
       }
-      alert( `Bearer ${accessToken}`);
+      alert( `Upload Fail`);
     }
   };
 
