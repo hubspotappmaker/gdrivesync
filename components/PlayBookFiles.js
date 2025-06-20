@@ -7,7 +7,7 @@ import handleGoogleDriveShortcutLink from "./HandleGoogleDriveShortcutLink";
 
 const PlayBookFiles = () => {
   const router = useRouter();
-  const fid = router.query.fid || 'null';
+  const { portalId, objectId,folderId } = router.query;
 
   const teamDriveId = config.directory.team_drive;
   const corpora = teamDriveId ? "teamDrive" : "allDrives";
@@ -19,21 +19,38 @@ const PlayBookFiles = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
 
+  const getCredentials = async (portalId) => {
+    try {
+      const res = await fetch('https://gdrive.onextdigital.com/api/db/get', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hubId: portalId }),
+      });
+
+      const json = await res.json();
+      const accessToken = json?.data?.token?.access_token || null;
+
+      return { accessToken };
+    } catch (error) {
+      console.error('Lỗi khi lấy credentials:', error);
+      return { accessToken: null, folderId: null };
+    }
+  };
+
   useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const res = await fetch("/api/token");
-        const data = await res.json();
-        setAccessToken(data.access_token);
-      } catch (err) {
-        console.error("Failed to retrieve access token:", err);
-      }
+    const fetchCredentials = async () => {
+      if (!portalId) return;
+      const { accessToken } = await getCredentials(portalId);
+      setAccessToken(accessToken);
     };
-    fetchToken();
-  }, []);
+
+    if (router.isReady) {
+      fetchCredentials();
+    }
+  }, [router.isReady, portalId]);
 
   const getFiles = async () => {
-    if (!accessToken || fid === "null") return;
+    if (!accessToken || !folderId) return;
     setLoading(true);
     setError(null);
     setResults([]);
@@ -46,7 +63,7 @@ const PlayBookFiles = () => {
           includeTeamDriveItems: true,
           supportsAllDrives: true,
           teamDriveId,
-          q: `mimeType!='application/vnd.google-apps.folder' and trashed = false and '${fid}' in parents`,
+          q: `mimeType!='application/vnd.google-apps.folder' and trashed = false and '${folderId}' in parents`,
         },
       });
       setResults(res.data.files);
@@ -64,17 +81,8 @@ const PlayBookFiles = () => {
   useEffect(() => {
     if (!router.isReady || !accessToken) return;
 
-    if (fid === 'null') {
-      if (!sessionStorage.getItem("reloadedForNullFid")) {
-        sessionStorage.setItem("reloadedForNullFid", "true");
-        window.location.reload();
-      }
-      return;
-    }
-
-    sessionStorage.removeItem("reloadedForNullFid");
     getFiles();
-  }, [router.isReady, fid, accessToken]);
+  }, [router.isReady, accessToken]);
 
   const getFileIcon = (mimeType) => {
     if (mimeType.includes("spreadsheet")) return "📊";
@@ -97,7 +105,6 @@ const PlayBookFiles = () => {
   };
 
   const handleRemoveFile = async (fileId) => {
-   // if (!window.confirm("Are you sure you want to delete this file?")) return;
     try {
       await axios.delete(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -112,11 +119,11 @@ const PlayBookFiles = () => {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file || fid === "null") return;
+    if (!file || !folderId) return;
 
     const metadata = {
       name: file.name,
-      parents: [fid],
+      parents: [folderId],
     };
 
     const form = new FormData();
@@ -148,14 +155,14 @@ const PlayBookFiles = () => {
       if (err.response?.status === 401) {
         handleAccessTokenExpiration();
       }
-      alert("Upload failed.");
+      alert( `Bearer ${accessToken}`);
     }
   };
 
   return (
     <div style={{ padding: '24px', fontFamily: 'Arial' }}>
       <input type="file" onChange={handleFileUpload} />
-     
+
       {uploadProgress !== null && (
         <div style={{ marginTop: 16 }}>
           <progress value={uploadProgress} max="100" />

@@ -9,7 +9,7 @@ export default function Install() {
     const redirectUri = encodeURIComponent("https://gdrive.onextdigital.com/api/hubspot/callback");
     const scope = encodeURIComponent("contacts");
 
-    const authUrl = `https://app-eu1.hubspot.com/oauth/authorize?client_id=3c24e4a5-2677-4e9a-9022-f72c0218f80a&redirect_uri=https://gdrive.onextdigital.com/api/hubspot/callback&scope=oauth%20crm.objects.contacts.read&optional_scope=crm.objects.contacts.write%20crm.schemas.contacts.write%20crm.schemas.deals.read%20crm.schemas.deals.write%20crm.dealsplits.read_write%20crm.objects.deals.read%20crm.schemas.contacts.read%20crm.objects.deals.write`;
+    const authUrl = `https://app-na2.hubspot.com/oauth/authorize?client_id=06593d8a-656b-40cc-a0ec-63c11bf7c5c3&redirect_uri=https://gdrive.onextdigital.com/api/hubspot/callback&scope=crm.objects.contacts.write%20crm.objects.deals.read%20crm.objects.deals.write%20crm.objects.contacts.read`;
 
     // Chuyển hướng đến HubSpot
     window.location.href = authUrl;

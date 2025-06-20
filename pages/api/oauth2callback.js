@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
     const redirectClient = '/driverootpicker';
-    const tokenUrl = `${redirectClient}?access_token=${access_token}`;
+    const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}`;
     res.redirect(tokenUrl);
 
     // check nếu có folder id trước rồi thì redirect luôn đến success

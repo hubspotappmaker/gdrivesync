@@ -4,38 +4,81 @@ import { useRouter } from 'next/router';
 
 export default function InstalledSuccess() {
   const router = useRouter();
-  const { hub_id, user, install_date } = router.query; // Lấy từ URL
+  const { hub_id, user, install_date } = router.query;
 
   const [userInfo, setUserInfo] = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !hub_id || !user || !install_date) return;
 
-    if (hub_id && user && install_date) {
-      setUserInfo({
+    const readableDate = new Date(install_date).toLocaleString();
+    const decodedUser = decodeURIComponent(user);
+
+    const info = {
+      hub_id,
+      user: decodedUser,
+      install_date: readableDate,
+    };
+    setUserInfo(info);
+
+    setStatus('⏳ Sending data...');
+
+    // Send data to backend API route
+    fetch('/api/db/connect', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         hub_id,
-        user: decodeURIComponent(user),
-        install_date: new Date(install_date).toLocaleString(), // Chuyển sang định dạng dễ đọc
+        email: decodedUser,
+        installed_date: install_date,
+        token: {
+          access_token: 'default',
+          access_token: 'default',
+          refresh_token: 'default',
+          expires_in: 'default',
+          token_type: 'default',
+          folder_id:'default',
+        },
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Data submission failed');
+        return res.json();
+      })
+      .then(() => setStatus('✅ Data submitted successfully!'))
+      .catch((err) => {
+        console.error('[CLIENT ERROR]', err);
+        setStatus('❌ Failed to submit data');
       });
-    }
   }, [router.isReady, hub_id, user, install_date]);
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <Head>
-        <title>✅ Install Successfully</title>
+        <title>✅ Installation Successful</title>
       </Head>
 
-      <h1>🎉 Congratulations, Installed Successfully!</h1>
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+        🎉 Installation Successful!
+      </h1>
 
       {userInfo ? (
         <div>
           <p><strong>👤 User:</strong> {userInfo.user}</p>
           <p><strong>🏢 Hub ID:</strong> {userInfo.hub_id}</p>
-          <p><strong>📅 Installed Date:</strong> {userInfo.install_date}</p>
+          <p><strong>📅 Installation Date:</strong> {userInfo.install_date}</p>
         </div>
       ) : (
-        <p>Không tìm thấy thông tin người dùng.</p>
+        <p>⚠️ User information not found.</p>
+      )}
+
+      {status && (
+        <p style={{ marginTop: '2rem', color: status.includes('✅') ? 'green' : 'red' }}>
+          {status}
+        </p>
       )}
     </div>
   );

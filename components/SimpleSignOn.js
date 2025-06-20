@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 var config = require('../config.json');
 
 const SimpleSignOn = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(null);
   const [currentURL, setCurrentURL] = useState(null);
+  const router = useRouter();
+
+  // Retrieve portalId from URL parameters
+  const { portalId } = router.query;
 
   useEffect(() => {
+    if (portalId) {
+      // Store portalId in localStorage if it's available
+      localStorage.setItem('portalId', portalId);
+    }
+    
     if (!currentURL) {
       setCurrentURL(window.location.href);
     }
-  }, [currentURL]);
+  }, [portalId, currentURL]);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
@@ -26,7 +36,7 @@ const SimpleSignOn = ({ children }) => {
         'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent&response_type=code&client_id=' +
         config.api.client_id +
         '&redirect_uri=' +
-       config.api.redirect_url +
+        config.api.redirect_url +
         '&scope=' +
         config.api.scopes;
     } catch (err) {

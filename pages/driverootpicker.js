@@ -11,12 +11,25 @@ export default function DrivePicker() {
       if (!router.isReady) return;
 
       const accessToken = router.query.access_token;
+      const { access_token, refresh_token, expires_in, token_type } = router.query;
+
+    // ✅ Ghi token vào file database.json
+    const dataToWrite = {
+      access_token,
+      refresh_token,
+      expires_in,
+      token_type,
+      timestamp: new Date().toISOString(),
+    };
 
       if (!accessToken) {
         alert('❌ Không có access_token trong URL');
         router.push('/');
         return;
       }
+
+      // Save the access_token to localStorage
+      localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
 
       const script = document.createElement('script');
       script.src = 'https://apis.google.com/js/api.js';

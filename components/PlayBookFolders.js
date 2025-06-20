@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/dist/client/router';
 import axios from "axios";
 import config from "../config.json";
-import styles from '../styles/Home.module.css';
 import handleAccessTokenExpiration from "./HandleAccessTokenExpiration";
 import Link from 'next/link';
 
@@ -93,31 +92,63 @@ const PlayBookFolders = () => {
 
   return (
     <div style={{ width: "100%", textAlign: "left" }}>
-      
-
-      {/* Folder listing */}
-      <div className={styles.grid}>
+      {/* Folder listing as grid */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+        gap: "20px",
+        padding: "20px"
+      }}>
         {results.map(result => (
-          <Link
-            href={{
-              pathname: `/list/[fid]`,
-              query: { fid: result.id },
-            }}
-            as={`/list/${result.id}`}
-            key={result.id}
-          >
-            <div
-              className={styles.card}
-              onClick={() => {
-                const container = document.querySelector('.searchContainer');
-                if (container) {
-                  container.innerHTML = '';
-                }
+          <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }} key={result.id}>
+            <Link
+              href={{
+                pathname: `/list/[fid]`,
+                query: { fid: result.id },
+              }}
+              as={`/list/${result.id}`}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #ddd",
+                  padding: "20px",
+                  textAlign: "center",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  borderRadius: "8px"
+                }}
+                onClick={() => {
+                  const container = document.querySelector('.searchContainer');
+                  if (container) {
+                    container.innerHTML = '';
+                  }
+                }}
+              >
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>{result.name}</h3>
+              </div>
+            </Link>
+
+            {/* Close button */}
+            <button
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "transparent",
+                border: "none",
+                fontSize: "18px",
+                color: "#ff4d4f",
+                cursor: "pointer",
+                transition: "color 0.3s"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();  // Prevent the card click event from firing
+                // Handle the close action here, if needed (e.g., delete folder, hide card, etc.)
               }}
             >
-              <h3>{result.name}</h3>
-            </div>
-          </Link>
+              X
+            </button>
+          </div>
         ))}
       </div>
 

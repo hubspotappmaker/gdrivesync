@@ -1,18 +1,27 @@
-// /pages/api/gdrive/search-folder.js
-
-import fs from 'fs';
-import path from 'path';
 import axios from 'axios';
 
-// ✅ Hàm lấy accessToken từ database.json
-const getAccessToken = (portalId) => {
-  const dbPath = path.join(process.cwd(), 'pages', 'database.json');
-  const raw = fs.readFileSync(dbPath, 'utf-8');
-  const data = JSON.parse(raw);
-  return data.access_token;
+// ✅ Hàm async để lấy access_token và folder_id từ endpoint /api/db/get
+const getCredentials = async (portalId) => {
+  try {
+    const res = await fetch('https://gdrive.onextdigital.com/api/db/get', { // 🔁 đổi domain nếu cần khi deploy
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ hubId: portalId }),
+    });
+
+    const json = await res.json();
+    const accessToken = json?.data?.token?.access_token || null;
+    const folderId = json?.data?.folder_id || null;
+
+    return { accessToken, folderId };
+  } catch (error) {
+    console.error('Lỗi khi lấy credentials:', error);
+    return { accessToken: null, folderId: null };
+  }
 };
-const ROOT_FOLDER_ID = '1Qa1M9xWTPDbT22f1dNIGk0YsVe2MzXDe';
-// ✅ API handler
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -24,20 +33,24 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing portalId or objectId' });
   }
 
-  const accessToken = getAccessToken(portalId);
-  if (!accessToken) {
-    return res.status(401).json({ error: 'Unauthorized - No access token found' });
+  const { accessToken, folderId } = await getCredentials(portalId);
+
+  if (!accessToken || accessToken === 'default') {
+    return res.status(401).json({ error: 'Unauthorized - No valid access token found' });
+  }
+
+  if (!folderId) {
+    return res.status(400).json({ error: 'No root folder ID (folder_id) found for this portal' });
   }
 
   try {
-    // 🔍 Bước 1: Tìm folder theo objectId
+    // 🔍 Bước 1: Tìm folder theo objectId trong folder gốc folderId
     const folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       params: {
-        q: `'${ROOT_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${objectId}'`,
-        supportsAllDrives: true,
+        q: `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${objectId}'`,
         supportsAllDrives: true,
         includeTeamDriveItems: true,
         fields: 'files(id, name)',
@@ -66,7 +79,6 @@ export default async function handler(req, res) {
 
     const files = filesRes.data.files || [];
 
-    // ✅ Trả về cả folder và danh sách files
     return res.status(200).json({ folder, files });
   } catch (err) {
     console.error('Lỗi khi tìm folder hoặc lấy file:', err.message);
