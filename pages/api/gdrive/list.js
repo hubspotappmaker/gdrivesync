@@ -3,7 +3,7 @@ import axios from 'axios';
 // ✅ Hàm async để lấy access_token và folder_id từ endpoint /api/db/get
 const getCredentials = async (portalId) => {
   try {
-    const res = await fetch('http://localhost:3000/api/db/get', { // 🔁 đổi domain nếu cần khi deploy
+    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', { // 🔁 đổi domain nếu cần khi deploy
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

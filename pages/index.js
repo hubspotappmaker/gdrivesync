@@ -8,34 +8,7 @@ import SimpleSignOn from '../components/SimpleSignOn'
 import PlayBookFolders from '../components/PlayBookFolders';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const accessToken = localStorage.getItem('access_token');
-    const pendingDealid = localStorage.getItem('pending_dealid');
-    const parentid = localStorage.getItem('drive_root_folder_id'); // lấy từ database ra
-    if (!accessToken) {
-      // 👉 Lưu dealid để dùng lại sau khi đăng nhập
-      localStorage.setItem('pending_dealid', pendingDealid);
-      router.push('/'); // Redirect to login page
-      return;
-    }
-    // Nếu có pending dealid, chuyển hướng đến trang tạo folder
-    
-    if (pendingDealid) {
-
-      //localStorage.removeItem('pending_dealid');
-      if(parentid){
-        router.push(`/folder?dealid=${pendingDealid}`);
-      }else{
-        router.push('/driverootpicker')
-      }
-    } else {
-      router.push('/');
-    }
-
-  }, []);
-
+  
   return (
      <div className={styles.container}>
       <Head>

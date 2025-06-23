@@ -40,7 +40,7 @@ export default function Home() {
 
     // Fetch the email using the portalId
     if (portalId) {
-      fetch('/api/db/get', {
+      fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export default function Home() {
     
     // Send data to backend API route
     if (portalId) {
-      fetch('/api/db/connect', {
+      fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

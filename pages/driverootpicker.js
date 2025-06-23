@@ -13,7 +13,7 @@ export default function DrivePicker() {
       const accessToken = router.query.access_token;
       const { access_token, refresh_token, expires_in, token_type } = router.query;
 
-    // ✅ Ghi token vào file database.json
+    
     const dataToWrite = {
       access_token,
       refresh_token,

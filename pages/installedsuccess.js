@@ -25,7 +25,7 @@ export default function InstalledSuccess() {
     setStatus('⏳ Sending data...');
 
     // Send data to backend API route
-    fetch('/api/db/connect', {
+    fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -24,7 +24,7 @@ async function refreshAccessToken(refresh_token, client_id, client_secret) {
 // Lấy token từ DB API
 async function getCredentials(portalId) {
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/api/db/get', {
+    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hubId: portalId }),
@@ -52,7 +52,7 @@ async function getCredentials(portalId) {
 // Gửi lại dữ liệu mới về DB
 async function updateCredentials(portalId, accessToken, refreshToken, folderId, email) {
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/api/db/connect', {
+    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

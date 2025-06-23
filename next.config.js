@@ -1,6 +1,7 @@
 console.log("✅ Đã load next.config.js");
 
 module.exports = {
+  basePath: '/fe',
   async rewrites() {
     console.log("🔁 Rewrite API proxy đang được cấu hình");
     return [

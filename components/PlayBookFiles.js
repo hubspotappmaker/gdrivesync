@@ -21,7 +21,7 @@ const PlayBookFiles = () => {
 
   const getCredentials = async (portalId) => {
     try {
-      const res = await fetch('https://gdrive.onextdigital.com/api/db/get', {
+      const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hubId: portalId }),
