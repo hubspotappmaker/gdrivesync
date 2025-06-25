@@ -1,227 +1,244 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/router';
-import axios from "axios";
-import config from "../config.json";
-import handleAccessTokenExpiration from "./HandleAccessTokenExpiration";
-import handleGoogleDriveShortcutLink from "./HandleGoogleDriveShortcutLink";
+import { useEffect, useState } from 'react';
+import {
+  Layout,
+  Menu,
+  Breadcrumb,
+  Card,
+  Row,
+  Col,
+  Typography,
+  Dropdown,
+  Spin,
+  Button,
+  Switch,
+  Space,
+  Select,
+  Table,
+  Avatar
+} from 'antd';
+import {
+  FolderOpenOutlined,
+  FileOutlined,
+  UploadOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
+  DownOutlined,
+  InfoCircleOutlined,
+  MoreOutlined,
+  ShareAltOutlined,
+  FileTextOutlined,
+  FileImageOutlined,
+  VideoCameraOutlined
+} from '@ant-design/icons';
+import axios from 'axios';
+import config from '../config.json';
+import handleAccessTokenExpiration from './HandleAccessTokenExpiration';
 
-const PlayBookFiles = () => {
-  const router = useRouter();
-  const { portalId, folderId } = router.query;
+const { Header, Content } = Layout;
+const { Title } = Typography;
 
-  const teamDriveId = config.directory.team_drive;
-  const corpora = teamDriveId ? "teamDrive" : "allDrives";
+const getMenuItems = (record) => [
+  {
+    key: 'view',
+    label: 'Xem',
+  },
+  {
+    key: 'download',
+    label: 'Tải xuống',
+  },
+  {
+    key: 'share',
+    label: 'Chia sẻ',
+  },
+  {
+    type: 'divider',
+  },
+  {
+    key: 'delete',
+    label: 'Xóa',
+    danger: true,
+  },
+];
 
+const columns = [
+  {
+    title: 'Tên',
+    dataIndex: 'name',
+    key: 'name',
+    sorter: true,
+    render: (text, record) => (
+        <Space>
+          {record.icon}
+          <Typography.Text>{text}</Typography.Text>
+          {record.shared && <ShareAltOutlined style={{ color: '#1890ff', fontSize: '12px' }} />}
+        </Space>
+    ),
+  },
+  {
+    title: 'Chủ sở hữu',
+    dataIndex: 'owner',
+    key: 'owner',
+    width: 150,
+    render: (text) => <Typography.Text>{text}</Typography.Text>,
+  },
+  {
+    title: 'Sửa đổi lần cuối',
+    dataIndex: 'modifiedTime',
+    key: 'modifiedTime',
+    width: 180,
+    sorter: true,
+  },
+  {
+    title: 'Kích cỡ tệp',
+    dataIndex: 'size',
+    key: 'size',
+    width: 120,
+    sorter: true,
+  },
+  {
+    title: '',
+    key: 'action',
+    width: 50,
+    render: (_, record) => (
+        <Dropdown
+            menu={{
+              items: getMenuItems(record),
+              onClick: ({ key }) => {
+                console.log(`Action ${key} for file ${record.name}`);
+              },
+            }}
+            trigger={['click']}
+            placement="bottomRight"
+        >
+          <Button
+              type="text"
+              icon={<MoreOutlined />}
+              size="small"
+              style={{ color: '#8c8c8c' }}
+          />
+        </Dropdown>
+    ),
+  },
+];
+
+export default function PlayBookFiles() {
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [accessToken, setAccessToken] = useState(null);
-
-  const getCredentials = async (portalId) => {
-    try {
-      const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hubId: portalId }),
-      });
-
-      const json = await res.json();
-      const accessToken = json?.data?.token?.access_token || null;
-
-      return { accessToken };
-    } catch (error) {
-      console.error('Lỗi khi lấy credentials:', error);
-      return { accessToken: null, folderId: null };
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [gridView, setGridView] = useState(true);
 
   useEffect(() => {
-    const fetchCredentials = async () => {
-      if (!portalId) return;
-      const { accessToken } = await getCredentials(portalId);
-      setAccessToken(accessToken);
-    };
+    const fetchFiles = async () => {
+      setLoading(true);
+      const accessToken = localStorage.getItem("access_token");
+      const targetFolderId = config.directory.target_folder;
+      const teamDriveId = config.directory.team_drive;
+      const corpora = teamDriveId ? "teamDrive" : "allDrives";
 
-    if (router.isReady) {
-      fetchCredentials();
-    }
-  }, [router.isReady, portalId]);
-
-  const getFiles = async () => {
-    if (!accessToken || !folderId) return;
-    setLoading(true);
-    setError(null);
-    setResults([]);
-
-    try {
-      const res = await axios.get("https://www.googleapis.com/drive/v3/files", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: {
-          corpora,
-          includeTeamDriveItems: true,
-          supportsAllDrives: true,
-          teamDriveId,
-          q: `mimeType!='application/vnd.google-apps.folder' and trashed = false and '${folderId}' in parents`,
-        },
-      });
-      setResults(res.data.files);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        handleAccessTokenExpiration();
-      } else {
-        setError(err);
-      }
-    }
-
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (!router.isReady || !accessToken) return;
-
-    getFiles();
-  }, [router.isReady, accessToken]);
-
-  const getFileIcon = (mimeType) => {
-    if (mimeType.includes("spreadsheet")) return "📊";
-    if (mimeType.includes("document")) return "📄";
-    if (mimeType.includes("presentation")) return "📽️";
-    if (mimeType === "application/pdf") return "📕";
-    if (mimeType.startsWith("image/")) return "🖼️";
-    return "📁";
-  };
-
-  const getFileUrl = (file) => {
-    const mime = file.mimeType;
-    const id = file.id;
-    if (mime.startsWith("application/vnd.google-apps.")) {
-      if (mime.includes("document")) return `https://docs.google.com/document/d/${id}/edit`;
-      if (mime.includes("spreadsheet")) return `https://docs.google.com/spreadsheets/d/${id}/edit`;
-      if (mime.includes("presentation")) return `https://docs.google.com/presentation/d/${id}/edit`;
-    }
-    return `https://drive.google.com/file/d/${id}/view`;
-  };
-
-  const handleRemoveFile = async (fileId) => {
-    try {
-      await axios.delete(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: { supportsAllDrives: true },
-      });
-      setResults(prev => prev.filter(file => file.id !== fileId));
-      alert("File deleted.");
-    } catch (err) {
-      alert("Failed to delete file.");
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !folderId) return;
-
-    const metadata = {
-      name: file.name,
-      parents: [folderId],
-    };
-
-    const form = new FormData();
-    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-    form.append("file", file);
-
-    setUploadProgress(0);
-    setUploadSuccess(false);
-
-    try {
-      await axios.post(
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true",
-        form,
-        {
+      try {
+        const res = await axios.get("https://www.googleapis.com/drive/v3/files", {
           headers: { Authorization: `Bearer ${accessToken}` },
-          onUploadProgress: (e) => {
-            const percent = Math.round((e.loaded * 100) / e.total);
-            setUploadProgress(percent);
-          },
-        }
-      );
+          params: {
+            corpora,
+            includeTeamDriveItems: true,
+            supportsAllDrives: true,
+            teamDriveId,
+            fields: "files(id,name,mimeType,owners,modifiedTime,size)",
+            q: `trashed = false and parents in '${targetFolderId}'`
+          }
+        });
 
-      setUploadProgress(null);
-      await getFiles();
-      setUploadSuccess(true);
-      setTimeout(() => setUploadSuccess(false), 3000);
-    } catch (err) {
-      setUploadProgress(null);
-      if (err.response?.status === 401) {
-        handleAccessTokenExpiration();
+        const files = res.data.files.map(file => ({
+          ...file,
+          key: file.id,
+          icon: file.mimeType === 'application/vnd.google-apps.folder'
+              ? <FolderOpenOutlined style={{ color: '#1890ff' }} />
+              : file.mimeType.startsWith('image/')
+                  ? <FileImageOutlined style={{ color: '#52c41a' }} />
+                  : file.mimeType.startsWith('video/')
+                      ? <VideoCameraOutlined style={{ color: '#722ed1' }} />
+                      : file.mimeType.includes('document')
+                          ? <FileTextOutlined style={{ color: '#fa8c16' }} />
+                          : <FileOutlined style={{ color: '#595959' }} />, // default icon
+          owner: file.owners?.[0]?.displayName || 'Không rõ',
+          shared: false // API không lấy field này mặc định
+        }));
+
+        setResults(files);
+      } catch (err) {
+        if (err.response?.status === 401) {
+          handleAccessTokenExpiration();
+        } else {
+          console.error("Lỗi tải dữ liệu:", err);
+        }
+      } finally {
+        setLoading(false);
       }
-      alert( `Upload Fail`);
-    }
-  };
+    };
+
+    fetchFiles();
+  }, []);
 
   return (
-    <div style={{ padding: '24px', fontFamily: 'Arial' }}>
-      <input type="file" onChange={handleFileUpload} />
+      <Layout style={{ minHeight: '100vh' }}>
+        <Content className="p-6">
+          <Spin spinning={loading}>
+            <div style={{ backgroundColor: '#fff', padding: '16px 0', borderBottom: '1px solid #f0f0f0', marginBottom: '24px' }}>
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <Space align="center">
+                    <Typography.Text style={{ fontSize: '22px', fontWeight: 400, color: '#5f6368' }}>
+                      Drive của tôi
+                    </Typography.Text>
+                    <DownOutlined style={{ fontSize: '12px', color: '#5f6368' }} />
+                  </Space>
+                </Col>
+                <Col>
+                  <Space>
+                    <Button.Group>
+                      <Button icon={<UnorderedListOutlined />} type={!gridView ? 'primary' : 'default'} onClick={() => setGridView(false)} />
+                      <Button icon={<AppstoreOutlined />} type={gridView ? 'primary' : 'default'} onClick={() => setGridView(true)} />
+                    </Button.Group>
+                  </Space>
+                </Col>
+              </Row>
+            </div>
 
-      {uploadProgress !== null && (
-        <div style={{ marginTop: 16 }}>
-          <progress value={uploadProgress} max="100" />
-          <span> {uploadProgress}%</span>
-        </div>
-      )}
-
-      {uploadSuccess && (
-        <div style={{ color: "green", marginTop: 10 }}>
-          ✅ File uploaded successfully!
-        </div>
-      )}
-
-      {error && (
-        <div style={{ color: "red", marginTop: 10 }}>
-          {error.message}
-        </div>
-      )}
-
-      <table border="1" cellPadding="10" style={{ width: '100%', marginTop: 24 }}>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>File Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr><td colSpan="3">Loading...</td></tr>
-          ) : results.length === 0 ? (
-            <tr><td colSpan="3">No files found.</td></tr>
-          ) : (
-            results.map((file, index) => (
-              <tr key={file.id}>
-                <td style={{ textAlign: 'center' }}>{index + 1}</td>
-                <td>
-                  <a
-                    href={getFileUrl(file)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleGoogleDriveShortcutLink}
-                  >
-                    <span style={{ marginRight: 8 }}>{getFileIcon(file.mimeType)}</span>
-                    {file.name}
-                  </a>
-                </td>
-                <td style={{ textAlign: 'center' }}>
-                  <button onClick={() => handleRemoveFile(file.id)} style={{ color: 'red' }}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            {gridView ? (
+                <Row gutter={[16, 16]}>
+                  {results.map((file) => (
+                      <Col key={file.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+                        <Card
+                            hoverable
+                            bodyStyle={{ padding: 12, textAlign: 'center' }}
+                            actions={[
+                              <Dropdown
+                                  key="menu"
+                                  trigger={["click"]}
+                                  menu={{ items: getMenuItems(file) }}
+                              >
+                                <Button size="small">⋮</Button>
+                              </Dropdown>,
+                            ]}
+                        >
+                          <div style={{ fontSize: 40 }}>{file.icon}</div>
+                          <div style={{ marginTop: 8 }}>{file.name}</div>
+                        </Card>
+                      </Col>
+                  ))}
+                </Row>
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={results}
+                    pagination={false}
+                    showHeader={true}
+                    size="middle"
+                    rowSelection={null}
+                    rowClassName="file-row"
+                />
+            )}
+          </Spin>
+        </Content>
+      </Layout>
   );
-};
-
-export default PlayBookFiles;
+}
