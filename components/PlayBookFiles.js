@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import axios from "axios";
 
 const PlayBookFiles = () => {
-  const router = useRouter();
-  const { portalId, folderId } = router.query;
+  const mockRouter = useRouter();
+  const { portalId, folderId } = mockRouter.query;
 
   // Mock config values that were previously imported from config.json
   const teamDriveId = null; // Set to null if not using a specific team drive, or a mock ID like 'mockTeamDrive789'
@@ -17,8 +17,12 @@ const PlayBookFiles = () => {
   const [error, setError] = useState(null); // Stores any error messages
   const [uploadProgress, setUploadProgress] = useState(null); // Tracks upload progress
   const [uploadSuccess, setUploadSuccess] = useState(false); // Indicates successful upload
+  const [deleteSuccess, setDeleteSuccess] = useState(false); // Indicates successful upload
   const [accessToken, setAccessToken] = useState(null); // Stores the Google Drive access token
   const [viewMode, setViewMode] = useState('grid'); // New state for view mode: 'list' or 'grid' - CHANGED TO 'grid'
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [fileToDeleteId, setFileToDeleteId] = useState(null);
 
   // Mock implementation for handleAccessTokenExpiration
   const handleAccessTokenExpiration = () => {
@@ -174,32 +178,46 @@ const PlayBookFiles = () => {
    * This function now makes a real API call (if accessToken is valid) or uses mock data.
    * @param {string} fileId - The ID of the file to remove.
    */
-  const handleRemoveFile = async (fileId) => {
-    // Using window.confirm for simplicity. In a production app, use a custom modal for better UX.
-    if (window.confirm("Are you sure you want to delete this file? This will move it to trash.")) {
-      try {
-        if (accessToken) {
-          await axios.delete(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            params: { supportsAllDrives: true }, // Ensure support for shared drives
-          });
-        } else {
-          // Fallback to mock data if no access token
-          await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-        }
+  const handleRemoveFile = (fileId) => {
+    setFileToDeleteId(fileId); // Lưu ID của tệp sẽ bị xóa
+    setShowConfirmModal(true); // Hiển thị modal xác nhận
+  };
+  const confirmDelete = async () => {
+    if (!fileToDeleteId) return; // Không được xảy ra nếu modal được kích hoạt đúng cách
 
-        // Filter out the deleted file from the current results state
-        setResults(prev => prev.filter(file => file.id !== fileId));
-        // Set success message
-        setUploadSuccess(true);
-        setTimeout(() => setUploadSuccess(false), 3000); // Hide after 3 seconds
-        setError(null); // Clear any previous errors
-      } catch (err) {
-        setError(new Error("Failed to delete file. Please try again.")); // Set error message
-        setUploadSuccess(false); // Ensure success message is not shown
-        console.error("Error deleting file:", err);
+    try {
+      if (accessToken) {
+        await axios.delete(`https://www.googleapis.com/drive/v3/files/${fileToDeleteId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { supportsAllDrives: true }, // Đảm bảo hỗ trợ các ổ đĩa dùng chung
+        });
+      } else {
+        // Quay lại dữ liệu giả lập nếu không có mã truy cập
+        await new Promise(resolve => setTimeout(resolve, 500)); // Giả lập độ trễ mạng
       }
+
+      // Lọc tệp đã xóa khỏi trạng thái kết quả hiện tại
+      setResults(prev => prev.filter(file => file.id !== fileToDeleteId));
+      // Đặt thông báo thành công
+      setDeleteSuccess(true);
+      setTimeout(() => setDeleteSuccess(false), 3000); // Ẩn sau 3 giây
+      setError(null); // Xóa mọi lỗi trước đó
+    } catch (err) {
+      setError(new Error("Không thể xóa tệp. Vui lòng thử lại.")); // Đặt thông báo lỗi
+      setDeleteSuccess(false); // Đảm bảo thông báo thành công không được hiển thị
+      console.error("Lỗi khi xóa tệp:", err);
+    } finally {
+      setShowConfirmModal(false); // Luôn đóng modal
+      setFileToDeleteId(null);    // Xóa ID tệp cần xóa
     }
+  };
+
+  /**
+   * Hủy xóa tệp và đóng modal xác nhận tùy chỉnh.
+   */
+  const cancelDelete = () => {
+    setShowConfirmModal(false); // Đóng modal
+    setFileToDeleteId(null);    // Xóa ID tệp cần xóa
   };
 
   /**
@@ -396,6 +414,19 @@ const PlayBookFiles = () => {
               gap: '0.5rem'
             }}>
               <span style={{ fontSize: '1.2rem' }}>✅</span> File uploaded successfully!
+            </div>
+          )}
+          {deleteSuccess && (
+            <div style={{
+              color: '#28a745',
+              marginTop: '0.8rem',
+              fontSize: '1rem',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>✅</span>Deleted successfully!
             </div>
           )}
 
@@ -662,6 +693,87 @@ const PlayBookFiles = () => {
           )
         )}
       </div>
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000 // Ensure it's above other content
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '2rem',
+            borderRadius: '12px',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+            textAlign: 'center',
+            maxWidth: '400px',
+            width: '90%',
+            boxSizing: 'border-box'
+          }}>
+            <h3 style={{
+              fontSize: '1.5rem',
+              color: '#343a40',
+              marginBottom: '1rem'
+            }}>
+              Delete Confirm
+            </h3>
+            <p style={{
+              fontSize: '1rem',
+              color: '#6c757d',
+              marginBottom: '1.5rem'
+            }}>
+             Are you sure you want to delete this file? This action cannot be undone.
+            </p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '1rem'
+            }}>
+              <button
+                onClick={cancelDelete}
+                style={{
+                  padding: '0.8rem 1.5rem',
+                  borderRadius: '8px',
+                  border: '1px solid #ced4da',
+                  backgroundColor: '#f1f3f5',
+                  color: '#495057',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                  outline: 'none'
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  padding: '0.8rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease, transform 0.2s ease',
+                  boxShadow: '0 4px 10px rgba(220, 53, 69, 0.2)',
+                  outline: 'none'
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

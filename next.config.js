@@ -1,7 +1,9 @@
 console.log("✅ Đã load next.config.js");
 
+const path = require('path');
+
 module.exports = {
-  basePath: '/fe',  // Giữ basePath là '/fe'
+  basePath: '/fe',
   experimental: {
     esmExternals: false,
   },
@@ -27,15 +29,20 @@ module.exports = {
     'rc-tree',
     '@rc-component/util'
   ],
+  webpack: (config, { isServer }) => {
+    // ⚠️ Thêm alias để "fake" module bị lỗi
+    config.resolve.alias['rc-notification/es/Notice'] = path.resolve(__dirname, 'empty.js');
+    return config;
+  },
   async rewrites() {
     return [
       {
         source: '/fe/connect-platform-app/application/connect-hubspot',
-        destination: '/connect-platform-app/application/connect-hubspot', // Xử lý URL "/fe" để chuyển sang đường dẫn không có "/fe"
+        destination: '/connect-platform-app/application/connect-hubspot',
       },
       {
         source: '/fe/home',
-        destination: '/home', // Xử lý "/fe/home" để chuyển về "/home"
+        destination: '/home',
       },
     ];
   },
