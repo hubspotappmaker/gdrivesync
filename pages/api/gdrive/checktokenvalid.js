@@ -66,6 +66,7 @@ async function updateCredentials(portalId, accessToken, refreshToken, folderId, 
           token_type: 'Bearer',
         },
         folder_id: folderId,
+        platform_name:'google_drive'
       }),
     });
 
@@ -114,11 +115,11 @@ export default async function handler(req, res) {
     }
 
 
-    const testData = await getCredentials(portalId)
-    console.log('1:',testData);
-    console.log('1:',refreshToken);
-     console.log('2:',clientId);
-     console.log('3:',clientSecret);
+    // const testData = await getCredentials(portalId)
+    // console.log('1:',testData);
+    // console.log('1:',refreshToken);
+    //  console.log('2:',clientId);
+    //  console.log('3:',clientSecret);
 
     if (!refreshToken || !clientId || !clientSecret) {
       return res.status(400).json({ success: false, message: 'Không có refresh_token hoặc client credentials' });

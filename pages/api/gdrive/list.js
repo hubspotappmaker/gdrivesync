@@ -45,6 +45,8 @@ export default async function handler(req, res) {
 
   try {
     // 🔍 Bước 1: Tìm folder theo objectId trong folder gốc folderId
+
+    //console.log('accessToken:',accessToken);
     const folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -57,7 +59,10 @@ export default async function handler(req, res) {
       },
     });
 
+     console.log('accessToken:',accessToken);
+
     const folders = folderSearchRes.data.files;
+    console.log('folders:',folders);
     if (!folders || folders.length === 0) {
       return res.status(404).json({ error: 'Folder not found' });
     }
