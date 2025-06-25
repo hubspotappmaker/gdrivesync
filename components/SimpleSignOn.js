@@ -23,12 +23,12 @@ const SimpleSignOn = ({ children }) => {
     }
   }, [portalId, currentURL]);
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem('access_token');
-    if (accessToken) {
-      setIsAuthenticated(true);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const accessToken = localStorage.getItem('access_token');
+  //   if (accessToken) {
+  //     setIsAuthenticated(true);
+  //   }
+  // }, []);
 
   const handleSignOn = () => {
     try {

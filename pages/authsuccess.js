@@ -51,11 +51,12 @@ export default function Home() {
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log(data);
           if (data.data.email) {
             setEmail(data.data.email); // Store the email in state
           }
-          if (data.data.installed_date) {
-            setAppId(data.data.installed_date); // Store the appId in state
+          if (data.data.app_id) {
+            setAppId(data.data.app_id); // Store the appId in state
           }
           if (data.data.installed_date) {
             setInstalledDate(data.data.installed_date); // Store the appId in state
@@ -78,19 +79,24 @@ export default function Home() {
           email: email, // Send the email fetched from the API
           token: accessToken,
           folder_id: folder_id,
+          platform_name:'google_drive'
         }),
       })
         .then((res) => {
           if (!res.ok) throw new Error('Data submission failed');
           return res.json();
         })
-        .then(() => setStatus('✅ Data submitted successfully!'))
+        .then(() => {
+          setStatus('✅ Data submitted successfully!');
+          // Redirect to the desired URL after successful data submission
+           window.location.href = ' https://gdrive.onextdigital.com/connect-platform-app/application/connect_google';
+        })
         .catch((err) => {
           console.error('[CLIENT ERROR]', err);
           setStatus('❌ Failed to submit data');
         });
     }
-  }, [router.isReady, folder_id, portalId, accessToken, rootFolder, email]); // Ensure dependencies are correctly set
+  }, [router.isReady, folder_id, portalId, accessToken, rootFolder, email, appId, installedDate]); // Ensure dependencies are correctly set
 
   return (
     <div className={styles.container}>

@@ -38,8 +38,8 @@ async function getCredentials(portalId) {
     return {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token,
-      clientId: tokenData.client_id,
-      clientSecret: tokenData.client_secret,
+      clientId : "759567949674-r8uiv70eekku45fssl2dco4k4q419ui0.apps.googleusercontent.com",
+      clientSecret : "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",
       folderId,
       email
     };
@@ -64,8 +64,6 @@ async function updateCredentials(portalId, accessToken, refreshToken, folderId, 
           refresh_token: refreshToken,
           expires_in: 'default',
           token_type: 'Bearer',
-          client_id: 'hidden',
-          client_secret: 'hidden',
         },
         folder_id: folderId,
       }),
@@ -114,6 +112,13 @@ export default async function handler(req, res) {
     } catch (err) {
       console.warn('⚠️ Token không hợp lệ, thử làm mới...');
     }
+
+
+    const testData = await getCredentials(portalId)
+    console.log('1:',testData);
+    console.log('1:',refreshToken);
+     console.log('2:',clientId);
+     console.log('3:',clientSecret);
 
     if (!refreshToken || !clientId || !clientSecret) {
       return res.status(400).json({ success: false, message: 'Không có refresh_token hoặc client credentials' });

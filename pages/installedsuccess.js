@@ -34,6 +34,7 @@ export default function InstalledSuccess() {
         hub_id,
         email: decodedUser,
         installed_date: install_date,
+        platform_name:'hubspot',
         token: {
           access_token: 'default',
           access_token: 'default',
@@ -48,7 +49,12 @@ export default function InstalledSuccess() {
         if (!res.ok) throw new Error('Data submission failed');
         return res.json();
       })
-      .then(() => setStatus('✅ Data submitted successfully!'))
+      .then(() =>  {
+          setStatus('✅ Data submitted successfully!');
+         window.location.href = 'https://gdrive.onextdigital.com/home';
+
+    
+        })
       .catch((err) => {
         console.error('[CLIENT ERROR]', err);
         setStatus('❌ Failed to submit data');
