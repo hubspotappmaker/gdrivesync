@@ -327,15 +327,6 @@ const PlayBookFiles = () => {
         padding: '2.5rem',
         boxSizing: 'border-box'
       }}>
-        <h2 style={{
-          fontSize: '2rem',
-          fontWeight: '600',
-          marginBottom: '1.5rem',
-          color: '#212529',
-          textAlign: 'center'
-        }}>
-          Manage Your Playbook Files
-        </h2>
 
         {/* File Upload Section */}
         <div style={{

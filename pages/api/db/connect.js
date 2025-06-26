@@ -4,6 +4,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
+console.log(req.body,'body đẩy vào backend <=================== ')
+
 
   try {
     const response = await axios.post(
