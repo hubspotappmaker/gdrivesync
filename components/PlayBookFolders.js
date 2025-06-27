@@ -48,7 +48,7 @@ const PlayBookFiles = () => {
     console.log(`Mock: Attempting to get credentials for portalId: ${portalId}`);
     try {
    
-      const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
+      const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hubId: portalId }), // Pass portalId as hubId

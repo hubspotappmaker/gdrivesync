@@ -25,7 +25,7 @@ export default function InstalledSuccess() {
     setStatus('⏳ Sending data...');
    
     // Send data to backend API route
-    fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
+    fetch('https://gdrive.nexce.io/fe/api/db/connect', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export default function InstalledSuccess() {
       })
       .then(() =>  {
           setStatus('✅ Data submitted successfully!');
-         window.location.href = 'https://gdrive.onextdigital.com/home';
+         window.location.href = 'https://gdrive.nexce.io/home';
 
     
         })

@@ -9,7 +9,7 @@ console.log(req.body,'body đẩy vào backend <=================== ')
 
   try {
     const response = await axios.post(
-      'https://gdrive.onextdigital.com/connect-platform-app/application/connect-gg-driver',
+      'https://gdrive.nexce.io/connect-platform-app/application/connect-gg-driver',
       req.body,
       {
         headers: {

@@ -55,7 +55,7 @@ const App = () => {
   useEffect(() => {
     
     if (portalId && accessToken && folderId) {
-      fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
+      fetch('https://gdrive.nexce.io/fe/api/db/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ const App = () => {
         .then(() => {
           setStatus('✅ Data submitted successfully!');
           // Redirect to the desired URL after successful data submission
-          window.location.href = 'https://gdrive.onextdigital.com/connect-platform-app/application/connect_google';
+          window.location.href = 'https://gdrive.nexce.io/connect-platform-app/application/connect_google';
         })
         .catch((err) => {
           console.error('[CLIENT ERROR]', err);

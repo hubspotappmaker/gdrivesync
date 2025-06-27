@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   try {
     const platformNameFinal = platformName || 'google_drive';
     const response = await axios.get(
-      `https://gdrive.onextdigital.com/connect-platform-app/application/get-user-info?hubId=${hubId}&platformName=${platformNameFinal}`, // Dynamic URL with hubId
+      `https://gdrive.nexce.io/connect-platform-app/application/get-user-info?hubId=${hubId}&platformName=${platformNameFinal}`, // Dynamic URL with hubId
       {
         headers: {
           'Content-Type': 'application/json',
