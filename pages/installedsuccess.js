@@ -15,8 +15,8 @@ export default function InstalledSuccess() {
     const readableDate = new Date().toISOString(); 
     const decodedUser = decodeURIComponent(user);
 
-const token = localStorage.getItem('access_token')
-console.log(token,'<======== token ')
+   const token = localStorage.getItem('access_token')
+   console.log(token,'<======== token ')
 
     const info = {
       hub_id,

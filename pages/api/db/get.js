@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   }
 
   const { hubId, platformName } = req.body; // Extract hubId from the request body	
-  console.log(hubId,'hub_id từ api get dữ liệu')
 
   if (!hubId) {
     return res.status(400).json({ message: 'hubId is required' });

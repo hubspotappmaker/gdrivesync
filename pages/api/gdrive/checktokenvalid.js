@@ -50,11 +50,14 @@ async function getCredentials(portalId) {
 }
 
 // Gửi lại dữ liệu mới về DB
-async function updateCredentials(portalId, accessToken, refreshToken, folderId, email) {
+async function updateCredentials(portalId, accessToken, refreshToken, folderId, email, token) {
   try {
     const res = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({
         hub_id: portalId,
         email: email,
@@ -86,6 +89,12 @@ export default async function handler(req, res) {
   const { portalId } = req.query;
   if (!portalId) {
     return res.status(400).json({ success: false, message: 'Thiếu portalId' });
+  }
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Missing or invalid token' });
   }
 
   try {
@@ -129,7 +138,7 @@ export default async function handler(req, res) {
     const newAccessToken = refreshed.access_token;
 
     // Lưu lại token mới
-    await updateCredentials(portalId, newAccessToken, refreshToken, folderId, email);
+    await updateCredentials(portalId, newAccessToken, refreshToken, folderId, email, token);
 
     return res.status(200).json({
       success: true,
