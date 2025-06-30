@@ -50,13 +50,12 @@ async function getCredentials(portalId) {
 }
 
 // Gửi lại dữ liệu mới về DB
-async function updateCredentials(portalId, accessToken, refreshToken, folderId, email, token) {
+async function updateCredentials(portalId, accessToken, refreshToken, folderId, email) {
   try {
-    const res = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
+    const res = await fetch('https://gdrive.nexce.io/connect-platform-app/application/save-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         hub_id: portalId,
@@ -90,12 +89,6 @@ export default async function handler(req, res) {
   if (!portalId) {
     return res.status(400).json({ success: false, message: 'Thiếu portalId' });
   }
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
-  if (!token) {
-    return res.status(401).json({ message: 'Missing or invalid token' });
-  }
 
   try {
     const {
@@ -124,12 +117,6 @@ export default async function handler(req, res) {
     }
 
 
-    // const testData = await getCredentials(portalId)
-    // console.log('1:',testData);
-    // console.log('1:',refreshToken);
-    //  console.log('2:',clientId);
-    //  console.log('3:',clientSecret);
-
     if (!refreshToken || !clientId || !clientSecret) {
       return res.status(400).json({ success: false, message: 'Không có refresh_token hoặc client credentials' });
     }
@@ -137,8 +124,10 @@ export default async function handler(req, res) {
     const refreshed = await refreshAccessToken(refreshToken, clientId, clientSecret);
     const newAccessToken = refreshed.access_token;
 
+
+
     // Lưu lại token mới
-    await updateCredentials(portalId, newAccessToken, refreshToken, folderId, email, token);
+    await updateCredentials(portalId, newAccessToken, refreshToken, folderId, email);
 
     return res.status(200).json({
       success: true,
