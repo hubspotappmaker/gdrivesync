@@ -549,11 +549,15 @@ const PlayBookFiles = () => {
 
           /* Specific styles for icon-only buttons */
           .button-icon-only {
-            width: 3.5rem; /* Fixed width for square-like button */
-            height: 3.5rem; /* Fixed height for square-like button */
-            padding: 0.5rem; /* Adjusted padding */
-            font-size: 1.5rem; /* Larger icon size */
-            text-align: center;
+              width: 3.5rem;
+              height: 3.5rem;
+              padding: 0.5rem;
+              font-size: 1.5rem;
+              text-align: center;
+              border: 1px solid #dadce0;
+              border-radius: 8px;
+              background-color: #fff !important;
+              color: #000 !important;
           }
           
           .button-primary {

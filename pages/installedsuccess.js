@@ -51,7 +51,7 @@ export default function InstalledSuccess() {
       })
       .then(() =>  {
           setStatus('✅ Data submitted successfully!');
-         window.location.href = 'https://gdrive.nexce.io/home';
+        // window.location.href = 'https://gdrive.nexce.io/home';
 
     
         })
