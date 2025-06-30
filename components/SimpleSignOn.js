@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/router';
 var config = require('../config.json');
 
@@ -10,25 +9,22 @@ const SimpleSignOn = ({ children }) => {
   const router = useRouter();
 
   // Retrieve portalId from URL parameters
-  const { portalId } = router.query;
+  const { hubId } = router.query;
 
   useEffect(() => {
-    if (portalId) {
+    if (hubId) {
       // Store portalId in localStorage if it's available
-      localStorage.setItem('portalId', portalId);
+      localStorage.setItem('portalId', hubId);
+       handleSignOn();
     }
     
     if (!currentURL) {
       setCurrentURL(window.location.href);
     }
-  }, [portalId, currentURL]);
 
-  // useEffect(() => {
-  //   const accessToken = localStorage.getItem('access_token');
-  //   if (accessToken) {
-  //     setIsAuthenticated(true);
-  //   }
-  // }, []);
+    // Automatically trigger the sign-on process
+   
+  }, [hubId, currentURL]);
 
   const handleSignOn = () => {
     try {
@@ -86,28 +82,6 @@ const SimpleSignOn = ({ children }) => {
     color: '#333',
   };
 
-  const buttonStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 24px',
-    fontSize: '16px',
-    color: '#fff',
-    backgroundColor: '#4285F4',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-  };
-
-  const logoStyle = {
-    width: '20px',
-    height: '20px',
-    marginRight: '10px',
-    backgroundColor: '#fff',
-    borderRadius: '2px',
-    padding: '2px',
-  };
-
   const errorStyle = {
     color: '#d93025',
     marginBottom: '15px',
@@ -117,14 +91,6 @@ const SimpleSignOn = ({ children }) => {
     <div style={containerStyle}>
       <div style={titleStyle}>Please sign on with Google to continue</div>
       {error && <div style={errorStyle}>An error occurred: {error.message}</div>}
-      <button style={buttonStyle} onClick={handleSignOn}>
-        <img
-          style={logoStyle}
-          src="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico"
-          alt="Google logo"
-        />
-        Sign On with Google
-      </button>
     </div>
   );
 };

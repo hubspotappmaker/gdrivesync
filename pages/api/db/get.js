@@ -5,15 +5,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { hubId } = req.body; // Extract hubId from the request body
+  const { hubId, platformName } = req.body; // Extract hubId from the request body	
+  console.log(hubId,'hub_id từ api get dữ liệu')
 
   if (!hubId) {
     return res.status(400).json({ message: 'hubId is required' });
   }
 
   try {
+    const platformNameFinal = platformName || 'google_drive';
     const response = await axios.get(
-      `https://gdrive.onextdigital.com/connect-platform-app/application/get-user-info?hubId=${hubId}`, // Dynamic URL with hubId
+      `https://gdrive.nexce.io/connect-platform-app/application/get-user-info?hubId=${hubId}&platformName=${platformNameFinal}`, // Dynamic URL with hubId
       {
         headers: {
           'Content-Type': 'application/json',

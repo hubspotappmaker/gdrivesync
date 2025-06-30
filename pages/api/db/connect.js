@@ -5,14 +5,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+
+
   try {
+    const token = localStorage.getItem('access_token');
+    console.log('hubtoken đasdsdsfss',token); 
     const response = await axios.post(
-      'https://gdrive.onextdigital.com/connect-platform-app/application/connect-gg-driver',
+      'https://gdrive.nexce.io/connect-platform-app/application/connect-gg-driver',
       req.body,
       {
         headers: {
           'Content-Type': 'application/json',
           'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,  // Add Authorization header with Bearer token
         },
       }
     );

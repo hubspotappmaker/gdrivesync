@@ -24,7 +24,7 @@ async function refreshAccessToken(refresh_token, client_id, client_secret) {
 // Lấy token từ DB API
 async function getCredentials(portalId) {
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
+    const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hubId: portalId }),
@@ -52,7 +52,7 @@ async function getCredentials(portalId) {
 // Gửi lại dữ liệu mới về DB
 async function updateCredentials(portalId, accessToken, refreshToken, folderId, email) {
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/connect', {
+    const res = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -66,6 +66,7 @@ async function updateCredentials(portalId, accessToken, refreshToken, folderId, 
           token_type: 'Bearer',
         },
         folder_id: folderId,
+        platform_name:'google_drive'
       }),
     });
 
@@ -114,11 +115,11 @@ export default async function handler(req, res) {
     }
 
 
-    const testData = await getCredentials(portalId)
-    console.log('1:',testData);
-    console.log('1:',refreshToken);
-     console.log('2:',clientId);
-     console.log('3:',clientSecret);
+    // const testData = await getCredentials(portalId)
+    // console.log('1:',testData);
+    // console.log('1:',refreshToken);
+    //  console.log('2:',clientId);
+    //  console.log('3:',clientSecret);
 
     if (!refreshToken || !clientId || !clientSecret) {
       return res.status(400).json({ success: false, message: 'Không có refresh_token hoặc client credentials' });

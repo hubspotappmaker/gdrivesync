@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     };
 
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
-    const redirectClient = 'https://gdrive.onextdigital.com/fe/driverootpicker';
+    const redirectClient = 'https://gdrive.nexce.io/fe/driverootpicker';
     const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}`;
     res.redirect(tokenUrl);
 

@@ -7,7 +7,7 @@ export async function getServerSideProps(context) {
   let rootFolderId = null;
 
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', {
+    const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hubId: portalId }),
@@ -64,7 +64,7 @@ export async function getServerSideProps(context) {
 
     return {
       redirect: {
-        destination: `https://gdrive.onextdigital.com/fe/list?folderId=${folderId}&portalId=${portalId}&objectId=${objectId}`,
+        destination: `https://gdrive.nexce.io/fe/list?folderId=${folderId}&portalId=${portalId}&objectId=${objectId}`,
         permanent: false
       }
     };

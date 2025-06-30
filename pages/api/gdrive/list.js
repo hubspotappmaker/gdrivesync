@@ -3,7 +3,7 @@ import axios from 'axios';
 // ✅ Hàm async để lấy access_token và folder_id từ endpoint /api/db/get
 const getCredentials = async (portalId) => {
   try {
-    const res = await fetch('https://gdrive.onextdigital.com/fe/api/db/get', { // 🔁 đổi domain nếu cần khi deploy
+    const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', { // 🔁 đổi domain nếu cần khi deploy
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,6 +45,8 @@ export default async function handler(req, res) {
 
   try {
     // 🔍 Bước 1: Tìm folder theo objectId trong folder gốc folderId
+
+    //console.log('accessToken:',accessToken);
     const folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -57,7 +59,10 @@ export default async function handler(req, res) {
       },
     });
 
+     console.log('accessToken:',accessToken);
+
     const folders = folderSearchRes.data.files;
+    console.log('folders:',folders);
     if (!folders || folders.length === 0) {
       return res.status(404).json({ error: 'Folder not found' });
     }

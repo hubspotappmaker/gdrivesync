@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 
     // ✅ Redirect về trang thành công, có kèm ngày cài đặt
     return res.redirect(
-      `https://gdrive.onextdigital.com/fe/installedsuccess?hub_id=${userInfo.hub_id}&user=${encodeURIComponent(userInfo.user)}&install_date=${encodeURIComponent(installDate)}`
+      `https://gdrive.nexce.io/fe/installedsuccess?hub_id=${userInfo.hub_id}&user=${encodeURIComponent(userInfo.user)}&install_date=${encodeURIComponent(installDate)}`
     );
   } catch (err) {
     return res.status(500).json({
