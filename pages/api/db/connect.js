@@ -3,22 +3,26 @@ import axios from 'axios';
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
-  }
+  }	
 
+const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!token) {
+      return res.status(401).json({ message: 'Missing or invalid token' });
+    }
 
 
   try {
-    const token = localStorage.getItem('access_token');
-    console.log('hubtoken đasdsdsfss',token); 
     const response = await axios.post(
       'https://gdrive.nexce.io/connect-platform-app/application/connect-gg-driver',
       req.body,
       {
         headers: {
           'Content-Type': 'application/json',
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`,  // Add Authorization header with Bearer token
-        },
+          'Accept': '*/*'   ,
+'Authorization': `Bearer ${token}`,
+     },
       }
     );
 
