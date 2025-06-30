@@ -15,6 +15,9 @@ export default function InstalledSuccess() {
     const readableDate = new Date().toISOString(); 
     const decodedUser = decodeURIComponent(user);
 
+const token = localStorage.getItem('access_token')
+console.log(token,'<======== token ')
+
     const info = {
       hub_id,
       user: decodedUser,
@@ -29,6 +32,7 @@ export default function InstalledSuccess() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+'Authorization': `Bearer ${token}`, 
       },
       body: JSON.stringify({
         hub_id,
@@ -51,7 +55,7 @@ export default function InstalledSuccess() {
       })
       .then(() =>  {
           setStatus('✅ Data submitted successfully!');
-        // window.location.href = 'https://gdrive.nexce.io/home';
+         window.location.href = 'https://gdrive.nexce.io/home';
 
     
         })

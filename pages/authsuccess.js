@@ -53,12 +53,14 @@ const App = () => {
 
 
   useEffect(() => {
+const token = localStorage.getItem('access_token')
     
     if (portalId && accessToken && folderId) {
       fetch('https://gdrive.nexce.io/fe/api/db/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           email: portalId,
