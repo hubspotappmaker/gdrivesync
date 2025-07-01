@@ -1,90 +1,41 @@
+// pages/drive-picker.js
 import React, { useEffect, useState } from 'react';
 
-const MessageModal = ({ message, onClose }) => {
-    if (!message) return null;
-
-    return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(107, 114, 128, 0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50
-        }}>
-            <div style={{
-                backgroundColor: '#fff', padding: '1.5rem', borderRadius: '0.5rem',
-                boxShadow: '0 10px 15px rgba(0,0,0,0.1)',
-                textAlign: 'center', maxWidth: '24rem', width: '100%'
-            }}>
-                <p style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem' }}>{message}</p>
-                <button onClick={onClose} style={{
-                    backgroundColor: '#3b82f6', color: '#fff', fontWeight: 'bold',
-                    padding: '0.5rem 1rem', borderRadius: '9999px', border: 'none', cursor: 'pointer'
-                }}>Close</button>
-            </div>
-        </div>
-    );
-};
-
 const App = () => {
-    const [message, setMessage] = useState(null);
     const [folders, setFolders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [view, setView] = useState('grid');
+    const [accessToken, setAccessToken] = useState(null);
+    const [message, setMessage] = useState('');
 
     const showMessage = (msg) => setMessage(msg);
-    const hideMessage = () => setMessage(null);
+    const hideMessage = () => setMessage('');
 
-    useEffect(() => {
-        const getQueryParams = () => {
-            const params = {};
-            window.location.search.substring(1).split('&').forEach(param => {
-                const [key, val] = param.split('=');
-                if (key && val) params[decodeURIComponent(key)] = decodeURIComponent(val);
-            });
-            return params;
-        };
-
-        const loadGoogleApis = () => {
-            const script = document.createElement('script');
-            script.src = 'https://apis.google.com/js/api.js';
-            script.onload = async () => {
-                await window.gapi.load('client', async () => {
-                    const { access_token } = getQueryParams();
-                    if (!access_token) {
-                        showMessage('❌ Missing access token');
-                        return;
-                    }
-
-                    await window.gapi.client.init({
-                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-                    });
-
-                    window.gapi.client.setToken({ access_token });
-                    fetchFolders();
-                });
-            };
-            document.body.appendChild(script);
-        };
-
-        const fetchFolders = async () => {
-            try {
-                const res = await window.gapi.client.drive.files.list({
-                    q: "mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents",
-                    fields: 'files(id, name)',
-                });
-                setFolders(res.result.files);
-                setLoading(false);
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showMessage('❌ Failed to load folders');
+    const getQueryParams = () => {
+        const params = {};
+        window.location.search.substring(1).split('&').forEach(param => {
+            const parts = param.split('=');
+            if (parts.length === 2) {
+                params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
             }
-        };
+        });
+        return params;
+    };
 
-        loadGoogleApis();
-    }, []);
+    const loadGoogleDriveFolders = async () => {
+        try {
+            const res = await window.gapi.client.drive.files.list({
+                q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+                fields: 'files(id, name)',
+            });
+            setFolders(res.result.files);
+        } catch (err) {
+            showMessage('❌ Failed to load folders');
+        }
+    };
 
     const createFolder = async () => {
-        const name = prompt('Enter new folder name:');
+        const name = prompt('Enter folder name:');
         if (!name) return;
-
         try {
             const res = await window.gapi.client.drive.files.create({
                 resource: {
@@ -93,76 +44,86 @@ const App = () => {
                 },
                 fields: 'id, name',
             });
-            setFolders([...folders, res.result]);
-            showMessage(`✅ Created folder: ${res.result.name}`);
+            setFolders((prev) => [...prev, res.result]);
+            showMessage(`✅ Created: ${res.result.name}`);
         } catch (err) {
-            console.error('Create error:', err);
             showMessage('❌ Failed to create folder');
         }
     };
 
     const handleSelect = (folderId) => {
-        showMessage(`✅ Folder selected: ${folderId}`);
-        setTimeout(() => {
-            hideMessage();
-            window.location.href = `/fe/authsuccess?folder_id=${folderId}`;
-        }, 1000);
+        window.location.href = `/fe/authsuccess?folder_id=${folderId}`;
     };
 
+    useEffect(() => {
+        const { access_token } = getQueryParams();
+        if (!access_token) return showMessage('No access_token');
+
+        setAccessToken(access_token);
+        localStorage.setItem('gdrivetoken', JSON.stringify({ access_token }));
+
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.onload = async () => {
+            await window.gapi.load('client', async () => {
+                await window.gapi.client.load('drive', 'v3');
+                await window.gapi.client.setToken({ access_token });
+                await loadGoogleDriveFolders();
+            });
+        };
+        document.body.appendChild(script);
+    }, []);
+
     return (
-        <>
-            <div className="container">
-                <main className="main">
-                    <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>📂 Select a Folder</h1>
-                    <button onClick={createFolder} style={{
-                        backgroundColor: '#16a34a', color: 'white',
-                        padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold', marginBottom: '1rem'
-                    }}>➕ Create Folder</button>
+        <div style={{ minHeight: '100vh', padding: '2rem', background: '#f9fafb' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', borderRadius: '10px', padding: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                <h1 style={{ fontSize: '2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    📁 Select a Folder
+                </h1>
 
-                    {loading ? <p>Loading folders...</p> : (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {folders.map(folder => (
-                                <li key={folder.id} style={{ marginBottom: '1rem' }}>
-                                    <span style={{ marginRight: '1rem' }}>{folder.name}</span>
-                                    <button onClick={() => handleSelect(folder.id)} style={{
-                                        padding: '0.3rem 0.8rem', backgroundColor: '#3b82f6', color: 'white',
-                                        borderRadius: '5px', border: 'none', fontWeight: 'bold'
-                                    }}>Select</button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </main>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <button onClick={createFolder} style={{ background: '#10b981', color: '#fff', fontWeight: 'bold', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}>+ Create Folder</button>
+                    <div>
+                        <button onClick={() => setView('grid')} style={{ marginRight: '0.5rem' }}>🔲 Grid</button>
+                        <button onClick={() => setView('list')}>📄 List</button>
+                    </div>
+                </div>
+
+                {view === 'list' ? (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                        <tr>
+                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Folder Name</th>
+                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {folders.map(folder => (
+                            <tr key={folder.id} style={{ borderTop: '1px solid #e5e7eb' }}>
+                                <td style={{ padding: '0.5rem' }}>{folder.name}</td>
+                                <td style={{ padding: '0.5rem' }}>
+                                    <button onClick={() => handleSelect(folder.id)} style={{ background: '#3b82f6', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '4px', fontWeight: 'bold', border: 'none' }}>Select</button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                        {folders.map(folder => (
+                            <div key={folder.id} style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>{folder.name}</span>
+                                <button onClick={() => handleSelect(folder.id)} style={{ background: '#3b82f6', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '4px', fontWeight: 'bold', border: 'none' }}>Select</button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {message && (
+                    <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '6px' }}>{message}</div>
+                )}
             </div>
-
-            <MessageModal message={message} onClose={hideMessage} />
-
-            <style jsx global>{`
-        body {
-          font-family: 'Inter', sans-serif;
-          background-color: #f9fafb;
-          margin: 0;
-          padding: 0;
-        }
-
-        .container {
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          min-height: 100vh;
-          padding-top: 4rem;
-        }
-
-        .main {
-          background: white;
-          padding: 2rem;
-          border-radius: 10px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          max-width: 600px;
-          width: 100%;
-        }
-      `}</style>
-        </>
+        </div>
     );
 };
 
