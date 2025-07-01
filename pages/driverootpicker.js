@@ -309,8 +309,8 @@ const App = () => {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: '1rem',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: '1.2rem',
                             marginTop: '1rem',
                         }}
                     >
@@ -318,14 +318,18 @@ const App = () => {
                             <div
                                 key={folder.id}
                                 style={{
-                                    border: '1px solid #f0f0f0',
+                                    border: '1px solid #e0e0e0',
                                     borderRadius: '12px',
-                                    padding: '1rem',
+                                    padding: '1.2rem',
                                     background: '#fff',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    minHeight: '120px',
                                 }}
                             >
-                                <h4 style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>{folder.name}</h4>
+                                <h4 style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.75rem' }}>{folder.name}</h4>
                                 <button
                                     onClick={() => handleSelect(folder.id)}
                                     style={{
@@ -335,6 +339,7 @@ const App = () => {
                                         padding: '6px 12px',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
+                                        alignSelf: 'flex-start',
                                     }}
                                 >
                                     Select
