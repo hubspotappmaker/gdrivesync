@@ -140,7 +140,7 @@ const App = () => {
       const picker = new window.google.picker.PickerBuilder()
         .setOAuthToken(accessToken)
         .addView(view)
-        .setTitle('Select Google Drive Folder') // Translated
+        .setTitle('Select Root Drive Folder') // Translated
         .setCallback((data) => {
           if (data.action === window.google.picker.Action.PICKED) {
             const folder = data.docs[0];

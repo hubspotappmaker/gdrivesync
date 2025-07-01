@@ -411,11 +411,16 @@ const PlayBookFiles = () => {
 
   /**
    * Handles the "Back" button click to navigate up to the parent folder.
+   * Prevents navigation if current folder is the root folder.
    */
   const handleBackClick = () => {
-    if (parentFolderId) {
-        window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
+    // Check if current folder is the root folder (no parent or parent is the same)
+    if (!parentFolderId || folderId === parentFolderId) {
+      console.log('Already at root folder, cannot go back');
+      return;
     }
+    
+    window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
   };
 
   /**
@@ -719,7 +724,7 @@ const PlayBookFiles = () => {
           borderBottom: '1px solid #e9ecef' /* Softer border */
         }}>
           {/* Back Button */}
-          {parentFolderId && (
+          {parentFolderId && folderId !== parentFolderId && (
             <button
               onClick={handleBackClick}
               className="button-secondary button-icon-only "
