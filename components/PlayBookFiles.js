@@ -420,8 +420,7 @@ const PlayBookFiles = () => {
     console.log(parentFolderId, ' <=============== parentfolderID')
     console.log(userRootFileId ,'<========== user root folder')
     // Check if current folder is the root folder (no parent or parent is the same)
-    if ( userRootFileId === parentFolderId) {
-      console.log(folderId)
+    if (userRootFileId === folderId && folderId === parentFolderId) {
       console.log('Already at root folder, cannot go back');
       return;
     }
