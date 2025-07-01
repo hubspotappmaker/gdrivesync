@@ -155,8 +155,8 @@ const App = () => {
             // Navigate back to the root picker page
             setTimeout(() => {
                 hideMessage();
-                window.location.href = '/driverootpicker'; // Adjust this to your actual root picker page
-            }, 2000);
+                window.location.href = 'https://gdrive.nexce.io/home/create/google_drive'; // Adjust this to your actual root picker page
+            }, 1000);
           }
         })
         .build();
@@ -206,7 +206,7 @@ const App = () => {
         }
 
         .main h1 {
-          font-size: 2.5rem;
+          font-size: 0.5rem;
           color: #0070f3;
           margin-bottom: 1.5rem;
           display: flex;
@@ -244,7 +244,7 @@ const App = () => {
 
         @media (max-width: 480px) {
           .main h1 {
-            font-size: 1.75rem;
+            font-size: 0.75rem;
             flex-direction: column;
             gap: 5px;
           }
