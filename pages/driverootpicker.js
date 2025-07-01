@@ -69,103 +69,133 @@ const App = () => {
     setMessage(null);
   };
 
-  useEffect(() => {
-    // Function to parse URL query parameters
-    const getQueryParams = () => {
-      const params = {};
-      window.location.search.substring(1).split('&').forEach(param => {
-        const parts = param.split('=');
-        if (parts.length === 2) {
-          params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
-        }
-      });
-      return params;
-    };
+    useEffect(() => {
+        const getQueryParams = () => {
+            const params = {};
+            window.location.search.substring(1).split('&').forEach(param => {
+                const parts = param.split('=');
+                if (parts.length === 2) {
+                    params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
+                }
+            });
+            return params;
+        };
 
-    const loadTokenAndPicker = async () => {
-      const query = getQueryParams();
-      const accessToken = query.access_token;
-      const { access_token, refresh_token, expires_in, token_type } = query;
+        const createFolder = async (folderName) => {
+            try {
+                const fileMetadata = {
+                    name: folderName,
+                    mimeType: 'application/vnd.google-apps.folder',
+                };
 
-      const dataToWrite = {
-        access_token,
-        refresh_token,
-        expires_in,
-        token_type,
-        timestamp: new Date().toISOString(),
-      };
+                const response = await window.gapi.client.drive.files.create({
+                    resource: fileMetadata,
+                    fields: 'id, name',
+                });
 
-      if (!accessToken) {
-        showMessage('❌ No access_token in URL');
-        // Redirect to home or an error page
-        setTimeout(() => {
-            hideMessage();
-            window.location.href = '/'; // Adjust this to your actual home page
-        }, 2000);
-        return;
-      }
+                const folder = response.result;
+                showMessage(`✅ Created folder: ${folder.name}`);
+                return folder;
+            } catch (err) {
+                showMessage(`❌ Failed to create folder: ${err.message}`);
+                console.error(err);
+                return null;
+            }
+        };
 
-      // Save the access_token to localStorage
-      localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
+        const createPicker = (accessToken, folderId = null) => {
+            if (!window.google || !window.google.picker) {
+                showMessage('❌ Google Picker is not ready.');
+                return;
+            }
 
-      const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
-      script.onload = () => {
-        // Ensure gapi is available globally before calling load
-        if (window.gapi) {
-          window.gapi.load('client:picker', {
-            callback: () => createPicker(accessToken),
-          });
-        } else {
-          showMessage('❌ Error loading Google API library.');
-        }
-      };
-      script.onerror = () => {
-        showMessage('❌ Failed to load Google API script.');
-      };
-      document.body.appendChild(script);
-    };
+            const view = new window.google.picker.DocsView(window.google.picker.ViewId.FOLDERS)
+                .setIncludeFolders(true)
+                .setSelectFolderEnabled(true);
 
-    const createPicker = (accessToken) => {
-      // Ensure google.picker is available globally
-      if (!window.google || !window.google.picker) {
-        showMessage('❌ Google Picker is not ready.');
-        return;
-      }
+            if (folderId) {
+                view.setParent(folderId); // show inside the created folder
+            }
 
-      const view = new window.google.picker.DocsView(window.google.picker.ViewId.FOLDERS)
-        .setIncludeFolders(true)
-        .setSelectFolderEnabled(true);
+            const picker = new window.google.picker.PickerBuilder()
+                .setOAuthToken(accessToken)
+                .addView(view)
+                .setTitle('Select Root Drive Folder')
+                .setCallback((data) => {
+                    if (data.action === window.google.picker.Action.PICKED) {
+                        const folder = data.docs[0];
+                        setTimeout(() => {
+                            hideMessage();
+                            window.location.href = `/fe/authsuccess?folder_id=${folder.id}`;
+                        }, 1000);
+                    } else if (data.action === window.google.picker.Action.CANCEL) {
+                        setTimeout(() => {
+                            hideMessage();
+                            window.location.href = 'https://gdrive.nexce.io/home/';
+                        }, 2000);
+                    }
+                })
+                .build();
 
-      const picker = new window.google.picker.PickerBuilder()
-        .setOAuthToken(accessToken)
-        .addView(view)
-        .setTitle('Select Root Drive Folder') // Translated
-        .setCallback((data) => {
-          if (data.action === window.google.picker.Action.PICKED) {
-            const folder = data.docs[0];
-           // showMessage(`✅ Folder selected: ${folder.name}`); // Translated
-            // Navigate to authsuccess with folder_id
-            setTimeout(() => {
-                hideMessage();
-                window.location.href = `/fe/authsuccess?folder_id=${folder.id}`;
-            }, 1000);
-          } else if (data.action === window.google.picker.Action.CANCEL) {
-            showMessage('❌ Folder selection canceled'); // Translated
-            // Navigate back to the root picker page
-            setTimeout(() => {
-                hideMessage();
-                window.location.href = '/driverootpicker'; // Adjust this to your actual root picker page
-            }, 2000);
-          }
-        })
-        .build();
+            picker.setVisible(true);
+        };
 
-      picker.setVisible(true);
-    };
+        const loadTokenAndPicker = async () => {
+            const query = getQueryParams();
+            const { access_token, refresh_token, expires_in, token_type } = query;
 
-    loadTokenAndPicker();
-  }, []); // Empty dependency array means this effect runs once after the initial render
+            const dataToWrite = {
+                access_token,
+                refresh_token,
+                expires_in,
+                token_type,
+                timestamp: new Date().toISOString(),
+            };
+
+            if (!access_token) {
+                showMessage('❌ No access_token in URL');
+                setTimeout(() => {
+                    hideMessage();
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
+
+            localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
+
+            const script = document.createElement('script');
+            script.src = 'https://apis.google.com/js/api.js';
+            script.onload = async () => {
+                if (window.gapi) {
+                    await window.gapi.load('client:picker', async () => {
+                        try {
+                            await window.gapi.client.load('drive', 'v3');
+
+                            // ✅ Create folder here
+                            const folder = await createFolder('NexCE Folder');
+                            if (folder) {
+                                createPicker(access_token, folder.id);
+                            } else {
+                                showMessage('⚠️ Folder not created. Showing root picker instead.');
+                                createPicker(access_token);
+                            }
+                        } catch (err) {
+                            showMessage('❌ Failed to load Google Drive API.');
+                            console.error(err);
+                        }
+                    });
+                } else {
+                    showMessage('❌ Error loading Google API library.');
+                }
+            };
+            script.onerror = () => {
+                showMessage('❌ Failed to load Google API script.');
+            };
+            document.body.appendChild(script);
+        };
+
+        loadTokenAndPicker();
+    }, []);
 
   return (
     <>
@@ -244,7 +274,7 @@ const App = () => {
 
         @media (max-width: 480px) {
           .main h1 {
-            font-size: 1.75rem;
+            font-size: 0.75rem;
             flex-direction: column;
             gap: 5px;
           }

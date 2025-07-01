@@ -70,7 +70,6 @@ export async function getServerSideProps(context) {
       }
     };
   } catch (err) {
-    console.log(err)
     console.error('❌ Lỗi khi xử lý thư mục:', err.message);
     return { notFound: true };
   }
@@ -80,3 +79,5 @@ export async function getServerSideProps(context) {
 export default function UploadRedirectPage() {
   return null;
 }
+
+
