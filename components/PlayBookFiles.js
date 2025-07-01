@@ -494,6 +494,9 @@ const PlayBookFiles = () => {
     }
   };
 
+  console.log(folderId , '<===================folderID')
+  console.log(parentFolderId, ' <=============== parentfolderID')
+
 
   return (
     <div style={{
