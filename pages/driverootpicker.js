@@ -5,14 +5,11 @@ import {
     Button,
     message,
     Switch,
-    Space,
     Card,
     Typography,
     Input,
-    Row,
-    Col,
     Empty,
-    Layout,
+    Layout
 } from 'antd';
 import {
     FolderAddOutlined,
@@ -32,6 +29,8 @@ const App = () => {
     const [accessToken, setAccessToken] = useState(null);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newFolderName, setNewFolderName] = useState('');
 
     const showMessage = (msg) => message.info(msg);
 
@@ -65,13 +64,12 @@ const App = () => {
         }
     };
 
-    const createFolder = async () => {
-        const name = prompt('Enter folder name:');
-        if (!name) return;
+    const handleCreateFolder = async () => {
+        if (!newFolderName) return;
         try {
             const res = await window.gapi.client.drive.files.create({
                 resource: {
-                    name,
+                    name: newFolderName,
                     mimeType: 'application/vnd.google-apps.folder',
                 },
                 fields: 'id, name',
@@ -83,6 +81,9 @@ const App = () => {
             showMessage(`✅ Created: ${res.result.name}`);
         } catch (err) {
             showMessage('❌ Failed to create folder');
+        } finally {
+            setNewFolderName('');
+            setIsModalOpen(false);
         }
     };
 
@@ -118,101 +119,207 @@ const App = () => {
     }, []);
 
     return (
-        <Layout style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #e6f0ff, #ffffff)' }}>
-            <Content style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
-                <div
-                    style={{
-                        background: '#ffffff',
-                        borderRadius: '12px',
-                        padding: '2rem',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                    }}
-                >
-                    <Title level={3} style={{ color: '#1677ff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <FolderOpenOutlined /> Select a Folder
-                    </Title>
+        <div
+            style={{
+                minHeight: '100vh',
+                background: 'linear-gradient(to bottom, #e6f0ff, #ffffff)',
+                padding: '2rem',
+                fontFamily: 'Inter, sans-serif',
+            }}
+        >
+            <div
+                style={{
+                    maxWidth: '1280px',
+                    margin: '0 auto',
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '2rem',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                }}
+            >
+                <h2 style={{ color: '#1677ff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <FolderOpenOutlined /> Select a Google Root Folder
+                </h2>
 
-                    <Row gutter={[16, 16]} align="middle" justify="space-between" style={{ marginBottom: 24 }}>
-                        <Col xs={24} sm={12} md={8}>
-                            <Input
-                                placeholder="Search folders"
-                                prefix={<SearchOutlined />}
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                allowClear
-                                style={{ height: 40 }}
-                            />
-                        </Col>
-                        <Col xs={24} sm={12} md="auto" style={{ textAlign: 'right' }}>
-                            <Space>
-                                <Button
-                                    type="primary"
-                                    icon={<FolderAddOutlined />}
-                                    onClick={createFolder}
-                                    style={{ height: 40 }}
-                                >
-                                    Create Folder
-                                </Button>
-                                <Switch
-                                    checkedChildren={<AppstoreOutlined />}
-                                    unCheckedChildren={<UnorderedListOutlined />}
-                                    checked={view === 'grid'}
-                                    onChange={(checked) => setView(checked ? 'grid' : 'list')}
-                                />
-                            </Space>
-                        </Col>
-                    </Row>
-
-                    {filteredFolders.length === 0 ? (
-                        <Empty description="No folders found." style={{ padding: '2rem 0' }} />
-                    ) : view === 'list' ? (
-                        <Table
-                            dataSource={filteredFolders.map((f) => ({ ...f, key: f.id }))}
-                            loading={loading}
-                            pagination={false}
-                            bordered
-                            rowClassName={() => 'ant-table-row-hover'}
-                            columns={[
-                                {
-                                    title: '📁 Folder Name',
-                                    dataIndex: 'name',
-                                },
-                                {
-                                    title: 'Action',
-                                    align: 'right',
-                                    render: (_, record) => (
-                                        <Button type="primary" onClick={() => handleSelect(record.id)}>
-                                            Select
-                                        </Button>
-                                    ),
-                                },
-                            ]}
-                        />
-                    ) : (
-                        <Row gutter={[16, 16]}>
-                            {filteredFolders.map((folder) => (
-                                <Col key={folder.id} xs={24} sm={12} md={8} lg={6} xl={4}>
-                                    <Card
-                                        title={folder.name}
-                                        hoverable
-                                        actions={[
-                                            <Button type="primary" onClick={() => handleSelect(folder.id)}>
-                                                Select
-                                            </Button>,
-                                        ]}
-                                        style={{
-                                            borderRadius: 12,
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                            border: '1px solid #f0f0f0',
-                                        }}
-                                    />
-                                </Col>
-                            ))}
-                        </Row>
-                    )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <input
+                        type="text"
+                        placeholder="Search folders"
+                        value={searchTerm}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            border: '1px solid #ccc',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                        }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            style={{
+                                background: '#1677ff',
+                                color: 'white',
+                                padding: '0.5rem 1.2rem',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontWeight: 600,
+                            }}
+                        >
+                            <FolderAddOutlined /> Create Folder
+                        </button>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ cursor: 'pointer', fontSize: '1.25rem' }} onClick={() => setView(view === 'grid' ? 'list' : 'grid')}>
+                                {view === 'grid' ? <AppstoreOutlined /> : <UnorderedListOutlined />}
+                            </div>
+                        </label>
+                    </div>
                 </div>
-            </Content>
-        </Layout>
+
+                {isModalOpen && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            background: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000,
+
+                        }}
+                    >
+                        <div
+                            style={{
+                                background: 'white',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                minWidth: '300px',
+                            }}
+                        >
+                            <h3 style={{ marginBottom: '1rem'  , color: '#1677ff'}}>Create New Folder</h3>
+                            <input
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem 1rem',
+                                    marginBottom: '1rem',
+                                    fontSize: '1rem',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '8px',
+                                }}
+                                placeholder="Enter folder name"
+                                value={newFolderName}
+                                onChange={(e) => setNewFolderName(e.target.value)}
+                            />
+                                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        style={{
+                                            padding: '0.5rem 1.2rem',
+                                            background: '#f0f0f0',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleCreateFolder}
+                                        style={{
+                                            background: '#1677ff',
+                                            color: 'white',
+                                            padding: '0.5rem 1.2rem',
+                                            borderRadius: '8px',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Create
+                                    </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {filteredFolders.length === 0 ? (
+                    <Empty description="No folders found." style={{ padding: '2rem 0' }} />
+                ) : view === 'list' ? (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                        <tr style={{ background: '#f0f2f5', textAlign: 'left' }}>
+                            <th style={{ padding: '12px' }}>📁 Folder Name</th>
+                            <th style={{ padding: '12px', textAlign: 'right' }}>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredFolders.map((folder) => (
+                            <tr key={folder.id} style={{ borderTop: '1px solid #eee' }}>
+                                <td style={{ padding: '12px' }}>{folder.name}</td>
+                                <td style={{ padding: '12px', textAlign: 'right' }}>
+                                    <button
+                                        onClick={() => handleSelect(folder.id)}
+                                        style={{
+                                            background: '#1677ff',
+                                            color: '#fff',
+                                            border: 'none',
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        Select
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                            gap: '1rem',
+                            marginTop: '1rem',
+                        }}
+                    >
+                        {filteredFolders.map((folder) => (
+                            <div
+                                key={folder.id}
+                                style={{
+                                    border: '1px solid #f0f0f0',
+                                    borderRadius: '12px',
+                                    padding: '1rem',
+                                    background: '#fff',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                }}
+                            >
+                                <h4 style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>{folder.name}</h4>
+                                <button
+                                    onClick={() => handleSelect(folder.id)}
+                                    style={{
+                                        background: '#1677ff',
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '6px 12px',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Select
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
