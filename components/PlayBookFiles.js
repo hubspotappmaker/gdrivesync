@@ -73,6 +73,7 @@ const PlayBookFiles = () => {
       // Extract the access_token from the response
       const accessToken = json?.data?.token?.access_token || null;
       const userDriveFolder = json?.data?.token?.folder_id
+      console.log(userDriveFolder)
         setUserRootFileId(userDriveFolder)
       if (!accessToken) {
         throw new Error("Failed to retrieve access token from credentials.");
