@@ -728,7 +728,7 @@ const PlayBookFiles = () => {
           borderBottom: '1px solid #e9ecef' /* Softer border */
         }}>
           {/* Back Button */}
-          {parentFolderId && folderId !== parentFolderId && (
+
             <button
               onClick={handleBackClick}
               className="button-secondary button-icon-only "
@@ -736,7 +736,7 @@ const PlayBookFiles = () => {
             >
               ↩
             </button>
-          )}
+
 
           {/* Action Buttons (aligned to the right) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginLeft: 'auto' }}>
