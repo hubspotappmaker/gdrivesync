@@ -229,7 +229,7 @@ const App = () => {
         .main {
           padding: 3rem 1.5rem;
           border-radius: 15px;
-          background-color: #ffffff;
+          //background-color: #ffffff;
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
           max-width: 600px;
           width: 100%;
@@ -274,7 +274,7 @@ const App = () => {
 
         @media (max-width: 480px) {
           .main h1 {
-            font-size: 0.75rem;
+            font-size: 1.75rem;
             flex-direction: column;
             gap: 5px;
           }
