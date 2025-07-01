@@ -414,6 +414,8 @@ const PlayBookFiles = () => {
    * Prevents navigation if current folder is the root folder.
    */
   const handleBackClick = () => {
+    console.log(folderId , '<===================folderID')
+    console.log(parentFolderId, ' <=============== parentfolderID')
     // Check if current folder is the root folder (no parent or parent is the same)
     if (!parentFolderId || folderId === parentFolderId) {
       console.log('Already at root folder, cannot go back');
@@ -494,8 +496,7 @@ const PlayBookFiles = () => {
     }
   };
 
-  console.log(folderId , '<===================folderID')
-  console.log(parentFolderId, ' <=============== parentfolderID')
+
 
 
   return (
