@@ -1,14 +1,19 @@
 // pages/drive-picker.js
 import React, { useEffect, useState } from 'react';
+import { Table, Button, message, Switch, Space, Card, Typography, Input, Row, Col } from 'antd';
+import { FolderAddOutlined, AppstoreOutlined, UnorderedListOutlined, SearchOutlined } from '@ant-design/icons';
+
+const { Title } = Typography;
 
 const App = () => {
     const [folders, setFolders] = useState([]);
+    const [filteredFolders, setFilteredFolders] = useState([]);
     const [view, setView] = useState('grid');
     const [accessToken, setAccessToken] = useState(null);
-    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const showMessage = (msg) => setMessage(msg);
-    const hideMessage = () => setMessage('');
+    const showMessage = (msg) => message.info(msg);
 
     const getQueryParams = () => {
         const params = {};
@@ -22,14 +27,18 @@ const App = () => {
     };
 
     const loadGoogleDriveFolders = async () => {
+        setLoading(true);
         try {
             const res = await window.gapi.client.drive.files.list({
                 q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
                 fields: 'files(id, name)',
             });
             setFolders(res.result.files);
+            setFilteredFolders(res.result.files);
         } catch (err) {
             showMessage('❌ Failed to load folders');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -44,7 +53,10 @@ const App = () => {
                 },
                 fields: 'id, name',
             });
-            setFolders((prev) => [...prev, res.result]);
+            const newFolder = res.result;
+            const updatedFolders = [...folders, newFolder];
+            setFolders(updatedFolders);
+            handleSearch(searchTerm, updatedFolders);
             showMessage(`✅ Created: ${res.result.name}`);
         } catch (err) {
             showMessage('❌ Failed to create folder');
@@ -53,6 +65,12 @@ const App = () => {
 
     const handleSelect = (folderId) => {
         window.location.href = `/fe/authsuccess?folder_id=${folderId}`;
+    };
+
+    const handleSearch = (value, list = folders) => {
+        setSearchTerm(value);
+        const filtered = list.filter(folder => folder.name.toLowerCase().includes(value.toLowerCase()));
+        setFilteredFolders(filtered);
     };
 
     useEffect(() => {
@@ -75,52 +93,61 @@ const App = () => {
     }, []);
 
     return (
-        <div style={{ minHeight: '100vh', padding: '2rem', background: '#f9fafb' }}>
+        <div style={{ minHeight: '100vh', padding: '2rem', background: '#f0f2f5' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', borderRadius: '10px', padding: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <h1 style={{ fontSize: '2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    📁 Select a Folder
-                </h1>
+                <Title level={2}>
+                    <FolderAddOutlined style={{ marginRight: 8 }} /> Select a Folder
+                </Title>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <button onClick={createFolder} style={{ background: '#10b981', color: '#fff', fontWeight: 'bold', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}>+ Create Folder</button>
-                    <div>
-                        <button onClick={() => setView('grid')} style={{ marginRight: '0.5rem' }}>🔲 Grid</button>
-                        <button onClick={() => setView('list')}>📄 List</button>
-                    </div>
-                </div>
+                <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+                    <Col span={12}>
+                        <Input
+                            placeholder="Search folders"
+                            prefix={<SearchOutlined />}
+                            value={searchTerm}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            allowClear
+                        />
+                    </Col>
+                    <Col>
+                        <Space>
+                            <Button type="primary" icon={<FolderAddOutlined />} onClick={createFolder}>
+                                Create Folder
+                            </Button>
+                            <Switch
+                                checkedChildren={<AppstoreOutlined />}
+                                unCheckedChildren={<UnorderedListOutlined />}
+                                checked={view === 'grid'}
+                                onChange={(checked) => setView(checked ? 'grid' : 'list')}
+                            />
+                        </Space>
+                    </Col>
+                </Row>
 
                 {view === 'list' ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                        <tr>
-                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Folder Name</th>
-                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {folders.map(folder => (
-                            <tr key={folder.id} style={{ borderTop: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '0.5rem' }}>{folder.name}</td>
-                                <td style={{ padding: '0.5rem' }}>
-                                    <button onClick={() => handleSelect(folder.id)} style={{ background: '#3b82f6', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '4px', fontWeight: 'bold', border: 'none' }}>Select</button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                    <Table
+                        dataSource={filteredFolders.map(f => ({ ...f, key: f.id }))}
+                        loading={loading}
+                        pagination={false}
+                        columns={[
+                            {
+                                title: 'Folder Name',
+                                dataIndex: 'name',
+                            },
+                            {
+                                title: 'Action',
+                                render: (_, record) => (
+                                    <Button type="primary" onClick={() => handleSelect(record.id)}>Select</Button>
+                                ),
+                            },
+                        ]}
+                    />
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                        {folders.map(folder => (
-                            <div key={folder.id} style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>{folder.name}</span>
-                                <button onClick={() => handleSelect(folder.id)} style={{ background: '#3b82f6', color: '#fff', padding: '0.25rem 0.75rem', borderRadius: '4px', fontWeight: 'bold', border: 'none' }}>Select</button>
-                            </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                        {filteredFolders.map(folder => (
+                            <Card key={folder.id} title={folder.name} actions={[<Button type="primary" onClick={() => handleSelect(folder.id)}>Select</Button>]}/>
                         ))}
                     </div>
-                )}
-
-                {message && (
-                    <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '6px' }}>{message}</div>
                 )}
             </div>
         </div>
