@@ -416,15 +416,6 @@ const PlayBookFiles = () => {
    * Prevents navigation if current folder is the root folder.
    */
   const handleBackClick = () => {
-    console.log(folderId , '<===================folderID')
-    console.log(parentFolderId, ' <=============== parentfolderID')
-    console.log(userRootFileId ,'<========== user root folder')
-    // Check if current folder is the root folder (no parent or parent is the same)
-    if (userRootFileId === folderId && folderId === parentFolderId) {
-      console.log('Already at root folder, cannot go back');
-      return;
-    }
-    
     window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
   };
 
@@ -731,14 +722,15 @@ const PlayBookFiles = () => {
           borderBottom: '1px solid #e9ecef' /* Softer border */
         }}>
           {/* Back Button */}
-
-            <button
-              onClick={handleBackClick}
-              className="button-secondary button-icon-only "
-              title="Back" // Added title for accessibility
-            >
-              ↩
-            </button>
+          {!(userRootFileId === folderId && folderId === parentFolderId) && (
+              <button
+                  onClick={handleBackClick}
+                  className="button-secondary button-icon-only"
+                  title="Back"
+              >
+                ↩
+              </button>
+          )}
 
 
           {/* Action Buttons (aligned to the right) */}
