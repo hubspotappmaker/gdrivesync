@@ -277,9 +277,9 @@ const App = () => {
                 ) : view === 'list' ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                        <tr style={{ background: '#f0f2f5', textAlign: 'left' }}>
-                            <th style={{ padding: '12px' }}>📁 Folder Name</th>
-                            <th style={{ padding: '12px', textAlign: 'right' }}>Action</th>
+                        <tr style={{ background: '#1677ff', textAlign: 'left' }}>
+                            <th style={{ padding: '12px',   color: '#fff' }}>📁 Folder Name</th>
+                            <th style={{ padding: '12px', textAlign: 'right',color: '#fff' }}>Action</th>
                         </tr>
                         </thead>
                         <tbody>
