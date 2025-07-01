@@ -60,6 +60,7 @@ export async function getServerSideProps(context) {
         }
       );
       folderId = createRes.data.id;
+
     }
 
     return {
@@ -69,6 +70,7 @@ export async function getServerSideProps(context) {
       }
     };
   } catch (err) {
+    console.log(err)
     console.error('❌ Lỗi khi xử lý thư mục:', err.message);
     return { notFound: true };
   }

@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const { code } = req.query;
 
   if (!code) {
-    return res.status(400).send('No code provided');
+    return res.redirect('https://gdrive.nexce.io/home/source');
   }
 
   try {
