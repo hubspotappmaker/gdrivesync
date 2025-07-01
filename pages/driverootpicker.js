@@ -1,9 +1,29 @@
 // pages/drive-picker.js
 import React, { useEffect, useState } from 'react';
-import { Table, Button, message, Switch, Space, Card, Typography, Input, Row, Col } from 'antd';
-import { FolderAddOutlined, AppstoreOutlined, UnorderedListOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+    Table,
+    Button,
+    message,
+    Switch,
+    Space,
+    Card,
+    Typography,
+    Input,
+    Row,
+    Col,
+    Empty,
+    Layout,
+} from 'antd';
+import {
+    FolderAddOutlined,
+    AppstoreOutlined,
+    UnorderedListOutlined,
+    SearchOutlined,
+    FolderOpenOutlined,
+} from '@ant-design/icons';
 
 const { Title } = Typography;
+const { Content } = Layout;
 
 const App = () => {
     const [folders, setFolders] = useState([]);
@@ -17,12 +37,15 @@ const App = () => {
 
     const getQueryParams = () => {
         const params = {};
-        window.location.search.substring(1).split('&').forEach(param => {
-            const parts = param.split('=');
-            if (parts.length === 2) {
-                params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
-            }
-        });
+        window.location.search
+            .substring(1)
+            .split('&')
+            .forEach((param) => {
+                const parts = param.split('=');
+                if (parts.length === 2) {
+                    params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
+                }
+            });
         return params;
     };
 
@@ -69,7 +92,9 @@ const App = () => {
 
     const handleSearch = (value, list = folders) => {
         setSearchTerm(value);
-        const filtered = list.filter(folder => folder.name.toLowerCase().includes(value.toLowerCase()));
+        const filtered = list.filter((folder) =>
+            folder.name.toLowerCase().includes(value.toLowerCase())
+        );
         setFilteredFolders(filtered);
     };
 
@@ -93,83 +118,101 @@ const App = () => {
     }, []);
 
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                padding: '2rem',
-                background: 'linear-gradient(to bottom, #e0f2ff, #ffffff)',
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: '1200px',
-                    margin: '0 auto',
-                    background: '#ffffff',
-                    borderRadius: '10px',
-                    padding: '2rem',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-            >
-                <Title level={2} style={{ color: '#1677ff' }}>
-                    <FolderAddOutlined style={{ marginRight: 8 }} /> Select a Folder
-                </Title>
+        <Layout style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #e6f0ff, #ffffff)' }}>
+            <Content style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
+                <div
+                    style={{
+                        background: '#ffffff',
+                        borderRadius: '12px',
+                        padding: '2rem',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                    }}
+                >
+                    <Title level={3} style={{ color: '#1677ff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FolderOpenOutlined /> Select a Folder
+                    </Title>
 
-                <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-                    <Col span={12}>
-                        <Input
-                            placeholder="Search folders"
-                            prefix={<SearchOutlined />}
-                            value={searchTerm}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            allowClear
+                    <Row gutter={[16, 16]} align="middle" justify="space-between" style={{ marginBottom: 24 }}>
+                        <Col xs={24} sm={12} md={8}>
+                            <Input
+                                placeholder="Search folders"
+                                prefix={<SearchOutlined />}
+                                value={searchTerm}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                allowClear
+                                style={{ height: 40 }}
+                            />
+                        </Col>
+                        <Col xs={24} sm={12} md="auto" style={{ textAlign: 'right' }}>
+                            <Space>
+                                <Button
+                                    type="primary"
+                                    icon={<FolderAddOutlined />}
+                                    onClick={createFolder}
+                                    style={{ height: 40 }}
+                                >
+                                    Create Folder
+                                </Button>
+                                <Switch
+                                    checkedChildren={<AppstoreOutlined />}
+                                    unCheckedChildren={<UnorderedListOutlined />}
+                                    checked={view === 'grid'}
+                                    onChange={(checked) => setView(checked ? 'grid' : 'list')}
+                                />
+                            </Space>
+                        </Col>
+                    </Row>
+
+                    {filteredFolders.length === 0 ? (
+                        <Empty description="No folders found." style={{ padding: '2rem 0' }} />
+                    ) : view === 'list' ? (
+                        <Table
+                            dataSource={filteredFolders.map((f) => ({ ...f, key: f.id }))}
+                            loading={loading}
+                            pagination={false}
+                            bordered
+                            rowClassName={() => 'ant-table-row-hover'}
+                            columns={[
+                                {
+                                    title: '📁 Folder Name',
+                                    dataIndex: 'name',
+                                },
+                                {
+                                    title: 'Action',
+                                    align: 'right',
+                                    render: (_, record) => (
+                                        <Button type="primary" onClick={() => handleSelect(record.id)}>
+                                            Select
+                                        </Button>
+                                    ),
+                                },
+                            ]}
                         />
-                    </Col>
-                    <Col>
-                        <Space>
-                            <Button type="primary" icon={<FolderAddOutlined />} onClick={createFolder}>
-                                Create Folder
-                            </Button>
-                            <Switch
-                                checkedChildren={<AppstoreOutlined />}
-                                unCheckedChildren={<UnorderedListOutlined />}
-                                checked={view === 'grid'}
-                                onChange={(checked) => setView(checked ? 'grid' : 'list')}
-                            />
-                        </Space>
-                    </Col>
-                </Row>
-
-                {view === 'list' ? (
-                    <Table
-                        dataSource={filteredFolders.map(f => ({ ...f, key: f.id }))}
-                        loading={loading}
-                        pagination={false}
-                        columns={[
-                            {
-                                title: 'Folder Name',
-                                dataIndex: 'name',
-                            },
-                            {
-                                title: 'Action',
-                                render: (_, record) => (
-                                    <Button type="primary" onClick={() => handleSelect(record.id)}>Select</Button>
-                                ),
-                            },
-                        ]}
-                    />
-                ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
-                        {filteredFolders.map(folder => (
-                            <Card
-                                key={folder.id}
-                                title={folder.name}
-                                actions={[<Button type="primary" onClick={() => handleSelect(folder.id)}>Select</Button>]}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
+                    ) : (
+                        <Row gutter={[16, 16]}>
+                            {filteredFolders.map((folder) => (
+                                <Col key={folder.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+                                    <Card
+                                        title={folder.name}
+                                        hoverable
+                                        actions={[
+                                            <Button type="primary" onClick={() => handleSelect(folder.id)}>
+                                                Select
+                                            </Button>,
+                                        ]}
+                                        style={{
+                                            borderRadius: 12,
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                            border: '1px solid #f0f0f0',
+                                        }}
+                                    />
+                                </Col>
+                            ))}
+                        </Row>
+                    )}
+                </div>
+            </Content>
+        </Layout>
     );
 };
 
