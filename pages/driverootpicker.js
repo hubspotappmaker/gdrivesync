@@ -31,8 +31,14 @@ const App = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [centerMessage, setCenterMessage] = useState(null);
 
-    const showMessage = (msg) => message.info(msg);
+    const showMessage = (msg) => {
+        setCenterMessage(msg);
+        setTimeout(() => setCenterMessage(null), 1000);
+    };
+
+    // const showMessage = (msg) => message.info(msg);
 
     const getQueryParams = () => {
         const params = {};
@@ -137,6 +143,25 @@ const App = () => {
                     boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
                 }}
             >
+                {centerMessage && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: '#ffffff',
+                            color: '#1677ff',
+                            padding: '1rem 2rem',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            fontWeight: 600,
+                            zIndex: 9999,
+                        }}
+                    >
+                        {centerMessage}
+                    </div>
+                )}
                 <h2 style={{ color: '#1677ff', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <FolderOpenOutlined /> Select a Google Root Folder
                 </h2>
