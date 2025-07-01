@@ -20,6 +20,7 @@ const PlayBookFiles = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false); // Indicates successful deletion
   const [accessToken, setAccessToken] = useState(null); // Stores the Google Drive access token
   const [viewMode, setViewMode] = useState('grid'); // Current view mode: 'list' or 'grid'
+  const [userRootFileId,setUserRootFileId] = useState(null)
 
   // State for file deletion confirmation modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -71,7 +72,8 @@ const PlayBookFiles = () => {
 
       // Extract the access_token from the response
       const accessToken = json?.data?.token?.access_token || null;
-
+      const userDriveFolder = json?.data?.token?.folder_id
+        setUserRootFileId(userDriveFolder)
       if (!accessToken) {
         throw new Error("Failed to retrieve access token from credentials.");
       }
@@ -416,8 +418,9 @@ const PlayBookFiles = () => {
   const handleBackClick = () => {
     console.log(folderId , '<===================folderID')
     console.log(parentFolderId, ' <=============== parentfolderID')
+    console.log(userRootFileId ,'<========== user root folder')
     // Check if current folder is the root folder (no parent or parent is the same)
-    if (!parentFolderId || folderId === parentFolderId) {
+    if ( userRootFileId === parentFolderId) {
       console.log('Already at root folder, cannot go back');
       return;
     }
