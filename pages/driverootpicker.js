@@ -93,9 +93,24 @@ const App = () => {
     }, []);
 
     return (
-        <div style={{ minHeight: '100vh', padding: '2rem', background: '#f0f2f5' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', borderRadius: '10px', padding: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <Title level={2}>
+        <div
+            style={{
+                minHeight: '100vh',
+                padding: '2rem',
+                background: 'linear-gradient(to bottom, #e0f2ff, #ffffff)',
+            }}
+        >
+            <div
+                style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    background: '#ffffff',
+                    borderRadius: '10px',
+                    padding: '2rem',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }}
+            >
+                <Title level={2} style={{ color: '#1677ff' }}>
                     <FolderAddOutlined style={{ marginRight: 8 }} /> Select a Folder
                 </Title>
 
@@ -145,7 +160,11 @@ const App = () => {
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
                         {filteredFolders.map(folder => (
-                            <Card key={folder.id} title={folder.name} actions={[<Button type="primary" onClick={() => handleSelect(folder.id)}>Select</Button>]}/>
+                            <Card
+                                key={folder.id}
+                                title={folder.name}
+                                actions={[<Button type="primary" onClick={() => handleSelect(folder.id)}>Select</Button>]}
+                            />
                         ))}
                     </div>
                 )}
