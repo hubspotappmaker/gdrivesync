@@ -144,12 +144,12 @@ const App = () => {
         .setCallback((data) => {
           if (data.action === window.google.picker.Action.PICKED) {
             const folder = data.docs[0];
-            showMessage(`✅ Folder selected: ${folder.name}`); // Translated
+           // showMessage(`✅ Folder selected: ${folder.name}`); // Translated
             // Navigate to authsuccess with folder_id
             setTimeout(() => {
                 hideMessage();
                 window.location.href = `/fe/authsuccess?folder_id=${folder.id}`;
-            }, 2000);
+            }, 1000);
           } else if (data.action === window.google.picker.Action.CANCEL) {
             showMessage('❌ Folder selection canceled'); // Translated
             // Navigate back to the root picker page
