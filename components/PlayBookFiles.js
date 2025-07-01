@@ -20,7 +20,6 @@ const PlayBookFiles = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false); // Indicates successful deletion
   const [accessToken, setAccessToken] = useState(null); // Stores the Google Drive access token
   const [viewMode, setViewMode] = useState('grid'); // Current view mode: 'list' or 'grid'
-  const [userRootFileId,setUserRootFileId] = useState(null)
 
   // State for file deletion confirmation modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -72,9 +71,7 @@ const PlayBookFiles = () => {
 
       // Extract the access_token from the response
       const accessToken = json?.data?.token?.access_token || null;
-      const userDriveFolder = json?.data?.token?.folder_id
-      console.log(userDriveFolder)
-        setUserRootFileId(userDriveFolder)
+
       if (!accessToken) {
         throw new Error("Failed to retrieve access token from credentials.");
       }
@@ -414,10 +411,11 @@ const PlayBookFiles = () => {
 
   /**
    * Handles the "Back" button click to navigate up to the parent folder.
-   * Prevents navigation if current folder is the root folder.
    */
   const handleBackClick = () => {
-    window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
+    if (parentFolderId) {
+        window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
+    }
   };
 
   /**
@@ -490,8 +488,6 @@ const PlayBookFiles = () => {
       setCreateFolderLoading(false);
     }
   };
-
-
 
 
   return (
@@ -723,16 +719,15 @@ const PlayBookFiles = () => {
           borderBottom: '1px solid #e9ecef' /* Softer border */
         }}>
           {/* Back Button */}
-          {!(userRootFileId === folderId && folderId === parentFolderId) && (
-              <button
-                  onClick={handleBackClick}
-                  className="button-secondary button-icon-only"
-                  title="Back"
-              >
-                ↩
-              </button>
+          {parentFolderId && (
+            <button
+              onClick={handleBackClick}
+              className="button-secondary button-icon-only "
+              title="Back" // Added title for accessibility
+            >
+              ↩
+            </button>
           )}
-
 
           {/* Action Buttons (aligned to the right) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginLeft: 'auto' }}>
