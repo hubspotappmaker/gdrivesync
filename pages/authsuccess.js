@@ -38,10 +38,10 @@ const App = () => {
       setPortalId(storedPortalId);
     }
     if (storedRootFolder) {
-      setRootFolder(storedRootFolder); 
+      setRootFolder(storedRootFolder);
     }
     if (storedAccessToken) {
-      setAccessToken(storedAccessToken); 
+      setAccessToken(storedAccessToken);
     }
 
     // Combine current state values and local storage values for subsequent fetches/submissions
@@ -53,8 +53,8 @@ const App = () => {
 
 
   useEffect(() => {
-     const token = localStorage.getItem('access_token')
-    
+    const token = localStorage.getItem('access_token')
+
     if (portalId && accessToken && folderId) {
       fetch('https://gdrive.nexce.io/fe/api/db/connect', {
         method: 'POST',
@@ -67,7 +67,7 @@ const App = () => {
           token: accessToken,
           folder_id: folderId,
           platform_name: 'google_drive',
-          installed_date:'1242343'
+          installed_date: '1242343'
 
         }),
       })
@@ -78,7 +78,7 @@ const App = () => {
         .then(() => {
           setStatus('✅ Data submitted successfully!');
           // Redirect to the desired URL after successful data submission
-          window.location.href = 'https://gdrive.nexce.io/connect-platform-app/application/connect_google';
+          // window.location.href = 'https://gdrive.nexce.io/connect-platform-app/application/connect_google';
         })
         .catch((err) => {
           console.error('[CLIENT ERROR]', err);
@@ -207,7 +207,7 @@ const App = () => {
           {accessToken && (
             <p><strong>🔑 Access Token:</strong> {accessToken}</p>
           )}
-          {status && ( 
+          {status && (
             <p>{status}</p>
           )}
         </main>
