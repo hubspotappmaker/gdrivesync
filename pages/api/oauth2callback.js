@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     const { access_token, refresh_token, expires_in, token_type } = response.data;
 
-   
+
     const dataToWrite = {
       access_token,
       refresh_token,
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
     const redirectClient = 'https://gdrive.nexce.io/fe/driverootpicker';
     const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}`;
-    res.redirect(tokenUrl);
+    res.redirect(`https://gdrive.nexce.io/home/root?iframe=${tokenUrl}`);
 
     // check nếu có folder id trước rồi thì redirect luôn đến success
     // const redirectClient = '/authsuccess';

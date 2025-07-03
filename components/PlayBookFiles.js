@@ -32,8 +32,9 @@ const PlayBookFiles = () => {
   const [createFolderError, setCreateFolderError] = useState(null); // Stores any folder creation errors
   const [createFolderSuccess, setCreateFolderSuccess] = useState(false); // Indicates successful folder creation
   const [parentFolderId, setParentFolderId] = useState(null);
+  const [rootFolderId, setRootFolderId] = useState(null);
 
-  
+
   // Mock implementation for handleAccessTokenExpiration (for demonstration)
   const handleAccessTokenExpiration = () => {
     console.warn("Access token expired. In a real app, this would redirect for re-authentication.");
@@ -83,18 +84,49 @@ const PlayBookFiles = () => {
     }
   };
 
+  const getRootFolder = async (portalId) => {
+    console.log(`Attempting to get credentials for portalId: ${portalId}`);
+    try {
+      const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hubId: portalId }), // Pass portalId as hubId
+      });
+
+      const json = await res.json();
+      console.log("Credentials API response:", json);
+
+      // Extract the access_token from the response
+      const root_folder = json?.data?.folder_id || null;
+
+      if (!root_folder) {
+        throw new Error("Failed to retrieve root_folder from credentials.");
+      }
+      return { root_folder };
+
+    } catch (error) {
+      console.error('Error fetching credentials:', error);
+      return { root_folder: null }; // Return null accessToken on error
+    }
+  };
+
   // Effect hook to fetch credentials when router is ready and portalId is available
   useEffect(() => {
     const fetchCredentials = async () => {
       if (!portalId) return; // Ensure portalId exists
       const { accessToken } = await getCredentials(portalId);
+      const { folderRootId } = await getRootFolder(portalId);
       setAccessToken(accessToken);
+      setRootFolderId(folderRootId);
     };
 
     if (mockRouter.isReady) { // mockRouter.isReady is always true now
       fetchCredentials();
     }
   }, [mockRouter.isReady, portalId]);
+
+
+
 
   /**
    * Fetches files and folders from Google Drive based on the currentFolderId and accessToken.
@@ -354,15 +386,14 @@ const PlayBookFiles = () => {
 
     const fetchParentId = async () => {
       const parentIds = await getLastParentFolderId(folderId, accessToken);
-      
+
       if (parentIds && parentIds.length > 0) {
-       
-         const grandParentIds = await getLastParentFolderId(parentIds[0], accessToken);
-         if (grandParentIds && grandParentIds.length > 0){
-             setParentFolderId(parentIds[0]); // ✅ Save ID to state
-         }else{
-           setParentFolderId(null); // No parent folder
-         }
+
+        if (parentIds != parentFolderId) {
+          setParentFolderId(parentIds[0]); // ✅ Save ID to state
+        } else {
+          setParentFolderId(null); // No parent folder
+        }
 
       } else {
         setParentFolderId(null); // No parent folder
@@ -413,9 +444,8 @@ const PlayBookFiles = () => {
    * Handles the "Back" button click to navigate up to the parent folder.
    */
   const handleBackClick = () => {
-    if (parentFolderId) {
-        window.location.href = `https://gdrive.nexce.io/fe/list?folderId=${parentFolderId}&portalId=${portalId}`;
-    }
+    console.log("back folder");
+    mockRouter.back();
   };
 
   /**
@@ -924,8 +954,8 @@ const PlayBookFiles = () => {
                       backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8f9fa', /* Alternating rows */
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f1f3f4'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f1f3f4'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa'; }}
                     >
                       <td style={{
                         padding: '1rem 0.8rem',

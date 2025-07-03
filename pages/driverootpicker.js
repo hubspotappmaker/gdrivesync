@@ -106,11 +106,17 @@ const App = () => {
     };
 
     useEffect(() => {
-        const { access_token } = getQueryParams();
+        const { access_token, refresh_token } = getQueryParams();
         if (!access_token) return showMessage('No access_token');
 
         setAccessToken(access_token);
-        localStorage.setItem('gdrivetoken', JSON.stringify({ access_token }));
+
+         const dataToWrite = {
+            access_token,
+            refresh_token
+        };
+
+        localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite)); 
 
         const script = document.createElement('script');
         script.src = 'https://apis.google.com/js/api.js';
