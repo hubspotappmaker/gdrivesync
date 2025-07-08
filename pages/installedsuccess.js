@@ -12,57 +12,54 @@ export default function InstalledSuccess() {
   useEffect(() => {
     if (!router.isReady || !hub_id || !user || !install_date) return;
 
-    const readableDate = new Date().toISOString(); 
+    const readableDate = new Date().toISOString();
     const decodedUser = decodeURIComponent(user);
+    const token = localStorage.getItem('access_token');
 
-   const token = localStorage.getItem('access_token')
-   console.log(token,'<======== token ')
-
-    const info = {
+    setUserInfo({
       hub_id,
       user: decodedUser,
       install_date: readableDate,
-    };
-    setUserInfo(info);
+    });
 
-    setStatus('⏳ Sending data...');
-   
-    // Send data to backend API route
-    fetch('https://gdrive.nexce.io/fe/api/db/connect', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-'Authorization': `Bearer ${token}`, 
-      },
-      body: JSON.stringify({
-        hub_id,
-        email: decodedUser,
-        installed_date: install_date,
-        platform_name:'hubspot',
-        token: {
-          access_token: 'default',
-          access_token: 'default',
-          refresh_token: 'default',
-          expires_in: 'default',
-          token_type: 'default',
-          folder_id:'default',
-        },
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Data submission failed');
-        return res.json();
-      })
-      .then(() =>  {
-          setStatus('✅ Data submitted successfully!');
-         window.location.href = 'https://gdrive.nexce.io/home';
+    setStatus('⏳ sending data...');
 
-    
-        })
-      .catch((err) => {
-        console.error('[CLIENT ERROR]', err);
-        setStatus('❌ Failed to submit data');
-      });
+    (async () => {
+      try {
+        const res = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            hub_id,
+            email: decodedUser,
+            installed_date: install_date,
+            platform_name: 'hubspot',
+            token: {
+              access_token: 'default',
+              refresh_token: 'default',
+              expires_in: 'default',
+              token_type: 'default',
+              folder_id: 'default',
+            },
+          }),
+        });
+
+        const data = await res.json();
+        console.log("check data submit: ", data.error.msg)
+        if (res.ok) {
+          setStatus(`✅ ${data.message || 'Submit successfully!'}`);
+          window.location.href = 'https://gdrive.nexce.io/home';
+        } else {
+          setStatus(`❌ ${data.error.msg || 'Submit failed!'}`);
+        }
+      } catch (networkError) {
+        console.error('[NETWORK ERROR]', networkError);
+        setStatus('Can not connect to server');
+      }
+    })();
   }, [router.isReady, hub_id, user, install_date]);
 
   return (
