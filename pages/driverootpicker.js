@@ -108,15 +108,16 @@ const App = () => {
     useEffect(() => {
         const { access_token, refresh_token } = getQueryParams();
         if (!access_token) return showMessage('No access_token');
-
+        console.log("check getQueryParams: ", getQueryParams())
+        console.log("check refresh_token: ", refresh_token);
         setAccessToken(access_token);
 
-         const dataToWrite = {
+        const dataToWrite = {
             access_token,
             refresh_token
         };
 
-        localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite)); 
+        localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
 
         const script = document.createElement('script');
         script.src = 'https://apis.google.com/js/api.js';
@@ -232,7 +233,7 @@ const App = () => {
                                 minWidth: '300px',
                             }}
                         >
-                            <h3 style={{ marginBottom: '1rem'  , color: '#1677ff'}}>Create New Folder</h3>
+                            <h3 style={{ marginBottom: '1rem', color: '#1677ff' }}>Create New Folder</h3>
                             <input
                                 style={{
                                     width: '100%',
@@ -246,33 +247,33 @@ const App = () => {
                                 value={newFolderName}
                                 onChange={(e) => setNewFolderName(e.target.value)}
                             />
-                                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        style={{
-                                            padding: '0.5rem 1.2rem',
-                                            background: '#f0f0f0',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleCreateFolder}
-                                        style={{
-                                            background: '#1677ff',
-                                            color: 'white',
-                                            padding: '0.5rem 1.2rem',
-                                            borderRadius: '8px',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        Create
-                                    </button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    style={{
+                                        padding: '0.5rem 1.2rem',
+                                        background: '#f0f0f0',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleCreateFolder}
+                                    style={{
+                                        background: '#1677ff',
+                                        color: 'white',
+                                        padding: '0.5rem 1.2rem',
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    Create
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -283,32 +284,32 @@ const App = () => {
                 ) : view === 'list' ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                        <tr style={{ background: '#1677ff', textAlign: 'left' }}>
-                            <th style={{ padding: '12px',   color: '#fff' }}>📁 Folder Name</th>
-                            <th style={{ padding: '12px', textAlign: 'right',color: '#fff' }}>Action</th>
-                        </tr>
+                            <tr style={{ background: '#1677ff', textAlign: 'left' }}>
+                                <th style={{ padding: '12px', color: '#fff' }}>📁 Folder Name</th>
+                                <th style={{ padding: '12px', textAlign: 'right', color: '#fff' }}>Action</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {filteredFolders.map((folder) => (
-                            <tr key={folder.id} style={{ borderTop: '1px solid #eee' }}>
-                                <td style={{ padding: '12px' }}>{folder.name}</td>
-                                <td style={{ padding: '12px', textAlign: 'right' }}>
-                                    <button
-                                        onClick={() => handleSelect(folder.id)}
-                                        style={{
-                                            background: '#1677ff',
-                                            color: '#fff',
-                                            border: 'none',
-                                            padding: '6px 12px',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        Select
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            {filteredFolders.map((folder) => (
+                                <tr key={folder.id} style={{ borderTop: '1px solid #eee' }}>
+                                    <td style={{ padding: '12px' }}>{folder.name}</td>
+                                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                                        <button
+                                            onClick={() => handleSelect(folder.id)}
+                                            style={{
+                                                background: '#1677ff',
+                                                color: '#fff',
+                                                border: 'none',
+                                                padding: '6px 12px',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 ) : (

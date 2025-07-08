@@ -40,7 +40,8 @@ export default async function handler(req, res) {
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
     const redirectClient = 'https://gdrive.nexce.io/fe/driverootpicker';
     const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}`;
-    res.redirect(`https://gdrive.nexce.io/home/root?iframe=${tokenUrl}`);
+    const encodedTokenUrl = encodeURIComponent(tokenUrl);
+    res.redirect(`https://gdrive.nexce.io/home/root?iframe=${encodedTokenUrl}`);
 
     // check nếu có folder id trước rồi thì redirect luôn đến success
     // const redirectClient = '/authsuccess';

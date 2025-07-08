@@ -38,8 +38,8 @@ async function getCredentials(portalId) {
     return {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token,
-      clientId : "759567949674-r8uiv70eekku45fssl2dco4k4q419ui0.apps.googleusercontent.com",
-      clientSecret : "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",
+      clientId: "759567949674-r8uiv70eekku45fssl2dco4k4q419ui0.apps.googleusercontent.com",
+      clientSecret: "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",
       folderId,
       email
     };
@@ -68,7 +68,7 @@ async function updateCredentials(portalId, accessToken, refreshToken, folderId, 
           token_type: 'Bearer',
         },
         folder_id: folderId,
-        platform_name:'google_drive'
+        platform_name: 'google_drive'
       }),
     });
 
@@ -123,7 +123,6 @@ export default async function handler(req, res) {
 
     const refreshed = await refreshAccessToken(refreshToken, clientId, clientSecret);
     const newAccessToken = refreshed.access_token;
-
 
 
     // Lưu lại token mới

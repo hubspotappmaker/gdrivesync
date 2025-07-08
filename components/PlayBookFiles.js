@@ -5,6 +5,7 @@ import axios from "axios";
 const PlayBookFiles = () => {
   const mockRouter = useRouter();
   const { portalId, folderId } = mockRouter.query;
+  const [canGoBack, setCanGoBack] = useState(false);
 
   // Mock config values that were previously imported from config.json
   const teamDriveId = null; // Set to null if not using a specific team drive, or a mock ID like 'mockTeamDrive789'
@@ -443,9 +444,40 @@ const PlayBookFiles = () => {
   /**
    * Handles the "Back" button click to navigate up to the parent folder.
    */
+  // 1. Kiểm tra lần đầu mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Cách 1: dùng history.state.idx (Next.js/React Router sẽ có trường này)
+      const idx = window.history.state?.idx;
+      console.log("check window.history.length, ", window.history.length);
+      if (typeof idx === 'number') {
+        setCanGoBack(idx > 0);
+      } else {
+        // Cách 2: fallback dùng history.length
+        setCanGoBack(window.history.length > 1);
+      }
+    }
+  }, []);
+
+  // 2. Cập nhật lại mỗi khi route thay đổi
+  useEffect(() => {
+    const handleRouteComplete = () => {
+      if (typeof window !== 'undefined') {
+        const idx = window.history.state?.idx;
+        setCanGoBack(typeof idx === 'number' ? idx > 0 : window.history.length > 1);
+      }
+    };
+
+    mockRouter.events.on('routeChangeComplete', handleRouteComplete);
+    return () => {
+      mockRouter.events.off('routeChangeComplete', handleRouteComplete);
+    };
+  }, [mockRouter.events]);
+
   const handleBackClick = () => {
-    console.log("back folder");
-    mockRouter.back();
+    if (canGoBack) {
+      mockRouter.back();
+    }
   };
 
   /**
@@ -752,8 +784,13 @@ const PlayBookFiles = () => {
           {parentFolderId && (
             <button
               onClick={handleBackClick}
-              className="button-secondary button-icon-only "
-              title="Back" // Added title for accessibility
+              className="button-secondary button-icon-only"
+              title="Back"
+              disabled={!canGoBack}
+              style={{
+                opacity: canGoBack ? 1 : 0.5,
+                cursor: canGoBack ? 'pointer' : 'not-allowed'
+              }}
             >
               ↩
             </button>
@@ -772,7 +809,7 @@ const PlayBookFiles = () => {
 
             {/* File Upload Button (Icon Only) */}
             <label htmlFor="file-upload" className="button-success button-icon-only" style={{ cursor: 'pointer' }} title="Upload File">
-              📤
+              ⬆
             </label>
             <input
               id="file-upload"
