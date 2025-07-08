@@ -61,7 +61,7 @@ const App = () => {
           token: accessToken,
           folder_id: folderId,
           platform_name: 'google_drive',
-          installed_date: '1242343'
+          installed_date: new Date().toISOString()
         }),
       })
         .then((res) => {
