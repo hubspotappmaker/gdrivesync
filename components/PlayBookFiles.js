@@ -195,17 +195,100 @@ const PlayBookFiles = () => {
    * @returns {string} - An emoji representing the file/folder type.
    */
   const getFileIcon = (mimeType) => {
-    if (mimeType === "application/vnd.google-apps.folder") return "🗂️"; // Folder icon
-    if (mimeType.includes("spreadsheet") || mimeType.includes("sheet")) return "📊";
-    if (mimeType.includes("document") || mimeType.includes("wordprocessingml")) return "📄";
-    if (mimeType.includes("presentation")) return "📽️";
-    if (mimeType === "application/pdf") return "📕";
-    if (mimeType.startsWith("image/")) return "🖼️";
-    if (mimeType.startsWith("video/")) return "🎬";
-    if (mimeType.startsWith("audio/")) return "🎵";
-    if (mimeType.includes("zip") || mimeType.includes("rar")) return "📦";
-    return "📁"; // Default generic file icon for unknown types
+    if (mimeType === "application/vnd.google-apps.folder") {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/folder.png"
+          alt="Folder"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.includes("spreadsheet") || mimeType.includes("sheet")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/sheets.png"
+          alt="Google Sheets"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.includes("document") || mimeType.includes("wordprocessingml")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/google-docs.png"
+          alt="Google Docs"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.includes("presentation")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/slide.png"
+          alt="Google Slides"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType === "application/pdf") {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/pdf.png"
+          alt="PDF"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.startsWith("image/")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/image.png"
+          alt="Image file"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.startsWith("video/")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/youtube.png"
+          alt="Video file"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.startsWith("audio/")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/volume.png"
+          alt="Audio file"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    if (mimeType.includes("zip") || mimeType.includes("rar")) {
+      return (
+        <img
+          src="https://nexce.io/wp-content/uploads/2025/07/zip.png"
+          alt="Archive file"
+          style={{ width: '25px', height: '25px' }}
+        />
+      );
+    }
+
+    // Default
+    return <span style={{ fontSize: '2rem' }}>📁</span>;
   };
+
 
   /**
    * Constructs the appropriate Google Drive URL for a given file.
@@ -801,15 +884,68 @@ const PlayBookFiles = () => {
             {/* Create Subfolder Button (Icon Only) */}
             <button
               onClick={() => setShowCreateFolderModal(true)}
-              className="button-primary button-icon-only"
-              title="Create Subfolder" // Added title for accessibility
+              title="Create Subfolder"
+              style={{
+                width: '48px',            // 3rem
+                height: '48px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',      // 0.5rem
+                transition: 'background-color 0.2s',
+                backgroundColor: 'transparent',
+                border: '1px #dadce0 solid'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderWidth = '2px';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderWidth = '1px';
+              }}
             >
-              ╋
+              <img
+                src="https://nexce.io/wp-content/uploads/2025/07/subfolder.jpg"
+                alt="Tạo thư mục con"
+                style={{
+                  width: '24px',          // 1.5rem
+                  height: '24px',
+                }}
+              />
             </button>
 
-            {/* File Upload Button (Icon Only) */}
-            <label htmlFor="file-upload" className="button-success button-icon-only" style={{ cursor: 'pointer' }} title="Upload File">
-              ⬆
+            {/* File Upload Button */}
+            <label
+              htmlFor="file-upload"
+              title="Upload File"
+              style={{
+                width: '48px',
+                height: '48px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                border: '1px #dadce0 solid',           // <-- thêm border đen
+                transition: 'background-color 0.2s',
+                cursor: 'pointer',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderWidth = '2px';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderWidth = '1px';
+              }}
+            >
+              <img
+                src="https://nexce.io/wp-content/uploads/2025/07/upload.jpg"
+                alt="Tải lên file"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                }}
+              />
             </label>
             <input
               id="file-upload"
@@ -817,6 +953,7 @@ const PlayBookFiles = () => {
               onChange={handleFileUpload}
               style={{ display: 'none' }}
             />
+
 
             {/* View Mode Toggle Buttons (Moved to the right, next to other actions) */}
             <div className="view-toggle-button-group">
@@ -1165,156 +1302,160 @@ const PlayBookFiles = () => {
       </div>
 
       {/* Confirmation Modal for Deletion */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 style={{
-              fontSize: '1.5rem',
-              color: '#202124',
-              marginBottom: '1rem'
-            }}>
-              Confirm Deletion
-            </h3>
-            <p style={{
-              fontSize: '1rem',
-              color: '#5f6368',
-              marginBottom: '1.5rem'
-            }}>
-              Are you sure you want to delete this file/folder? This action cannot be undone.
-            </p>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '1rem'
-            }}>
-              <button
-                onClick={cancelDelete}
-                style={{
-                  padding: '0.8rem 1.5rem',
-                  borderRadius: '8px',
-                  border: '1px solid #dadce0', /* Subtle border */
-                  backgroundColor: '#ffffff',
-                  color: '#202124',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s ease, border-color 0.3s ease',
-                  outline: 'none',
-                  boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                style={{
-                  padding: '0.8rem 1.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#d93025', /* Google Red */
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s ease, transform 0.2s ease',
-                  boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)',
-                  outline: 'none'
-                }}
-              >
-                Delete
-              </button>
+      {
+        showConfirmModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3 style={{
+                fontSize: '1.5rem',
+                color: '#202124',
+                marginBottom: '1rem'
+              }}>
+                Confirm Deletion
+              </h3>
+              <p style={{
+                fontSize: '1rem',
+                color: '#5f6368',
+                marginBottom: '1.5rem'
+              }}>
+                Are you sure you want to delete this file/folder? This action cannot be undone.
+              </p>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '1rem'
+              }}>
+                <button
+                  onClick={cancelDelete}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid #dadce0', /* Subtle border */
+                    backgroundColor: '#ffffff',
+                    color: '#202124',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#d93025', /* Google Red */
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease, transform 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)',
+                    outline: 'none'
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Create Subfolder Modal */}
-      {showCreateFolderModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 style={{
-              fontSize: '1.5rem',
-              color: '#202124',
-              marginBottom: '1rem'
-            }}>
-              Create New Subfolder
-            </h3>
-            <input
-              type="text"
-              placeholder="Enter folder name"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              style={{
-                width: 'calc(100% - 2rem)',
-                padding: '0.8rem 1rem',
-                marginBottom: '1.5rem',
-                border: '1px solid #dadce0', /* Subtle border */
-                borderRadius: '8px',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
-              }}
-              onFocus={(e) => { e.target.style.borderColor = '#1a73e8'; e.target.style.boxShadow = '0 0 0 1px #1a73e8'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#dadce0'; e.target.style.boxShadow = 'none'; }}
-            />
-            {createFolderLoading && (
-              <p style={{ color: '#1a73e8', marginBottom: '1rem' }}>Creating folder...</p>
-            )}
-            {createFolderError && (
-              <p style={{ color: '#d93025', marginBottom: '1rem' }}>{createFolderError.message}</p>
-            )}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '1rem'
-            }}>
-              <button
-                onClick={() => {
-                  setShowCreateFolderModal(false);
-                  setNewFolderName(''); // Clear input on cancel
-                  setCreateFolderError(null); // Clear errors on cancel
-                }}
+      {
+        showCreateFolderModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3 style={{
+                fontSize: '1.5rem',
+                color: '#202124',
+                marginBottom: '1rem'
+              }}>
+                Create New Subfolder
+              </h3>
+              <input
+                type="text"
+                placeholder="Enter folder name"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
                 style={{
-                  padding: '0.8rem 1.5rem',
+                  width: 'calc(100% - 2rem)',
+                  padding: '0.8rem 1rem',
+                  marginBottom: '1.5rem',
+                  border: '1px solid #dadce0', /* Subtle border */
                   borderRadius: '8px',
-                  border: '1px solid #dadce0',
-                  backgroundColor: '#ffffff',
-                  color: '#202124',
                   fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s ease, border-color 0.3s ease',
                   outline: 'none',
-                  boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)'
+                  transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
                 }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateSubfolder}
-                disabled={createFolderLoading}
-                style={{
-                  padding: '0.8rem 1.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#34a853', /* Google Green */
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: createFolderLoading ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.3s ease, transform 0.2s ease',
-                  boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)',
-                  outline: 'none',
-                  opacity: createFolderLoading ? 0.7 : 1
-                }}
-              >
-                {createFolderLoading ? 'Creating...' : 'Create'}
-              </button>
+                onFocus={(e) => { e.target.style.borderColor = '#1a73e8'; e.target.style.boxShadow = '0 0 0 1px #1a73e8'; }}
+                onBlur={(e) => { e.target.style.borderColor = '#dadce0'; e.target.style.boxShadow = 'none'; }}
+              />
+              {createFolderLoading && (
+                <p style={{ color: '#1a73e8', marginBottom: '1rem' }}>Creating folder...</p>
+              )}
+              {createFolderError && (
+                <p style={{ color: '#d93025', marginBottom: '1rem' }}>{createFolderError.message}</p>
+              )}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '1rem'
+              }}>
+                <button
+                  onClick={() => {
+                    setShowCreateFolderModal(false);
+                    setNewFolderName(''); // Clear input on cancel
+                    setCreateFolderError(null); // Clear errors on cancel
+                  }}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid #dadce0',
+                    backgroundColor: '#ffffff',
+                    color: '#202124',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateSubfolder}
+                  disabled={createFolderLoading}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#34a853', /* Google Green */
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: createFolderLoading ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.3s ease, transform 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15)',
+                    outline: 'none',
+                    opacity: createFolderLoading ? 0.7 : 1
+                  }}
+                >
+                  {createFolderLoading ? 'Creating...' : 'Create'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

@@ -12,6 +12,21 @@ export default function InstalledSuccess() {
   const sendData = async ({ hub_id, user, install_date }) => {
     const decodedUser = decodeURIComponent(user);
     const token = localStorage.getItem('access_token');
+    if (!token) {
+      localStorage.setItem("queue_hubspot", JSON.stringify({
+        hub_id,
+        email: decodedUser,
+        installed_date: install_date,
+        platform_name: 'HubSpot',
+        token: {
+          access_token: 'default',
+          refresh_token: 'default',
+          expires_in: 'default',
+          token_type: 'default',
+          folder_id: 'default',
+        },
+      }))
+    }
     const response = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
       method: 'POST',
       headers: {
@@ -22,7 +37,7 @@ export default function InstalledSuccess() {
         hub_id,
         email: decodedUser,
         installed_date: install_date,
-        platform_name: 'hubspot',
+        platform_name: 'HubSpot',
         token: {
           access_token: 'default',
           refresh_token: 'default',
@@ -44,7 +59,15 @@ export default function InstalledSuccess() {
     setStatus('⏳ sending data...');
 
     sendData({ hub_id, user, install_date })
-      .then(({ ok, data }) => {
+      .then(response => {
+        const { ok, status, data } = response;
+        console.log("check status : ", status)
+        if (data.error?.msg === 'Unauthorized') {
+          // Nếu server trả về 401 Unauthorized
+          window.location.href = 'https://gdrive.nexce.io/authen';
+          return;
+        }
+
         if (ok) {
           setStatus(`✅ ${data.message || 'Submit successfully!'}`);
           window.location.href = 'https://gdrive.nexce.io/home';
@@ -53,10 +76,12 @@ export default function InstalledSuccess() {
           setStatus(`❌ ${data.error?.msg || 'Submit failed!'}`);
         }
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         setStatus('❌ Can not connect to server');
       });
   }, [router.isReady, hub_id, user, install_date]);
+
 
 
   return (
