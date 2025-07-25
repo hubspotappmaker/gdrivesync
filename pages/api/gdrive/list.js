@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { decodeToken } from '../../../hellper/decode';
 
 // ✅ Hàm async để lấy access_token và folder_id từ endpoint /api/db/get
 const getCredentials = async (portalId) => {
@@ -12,7 +13,10 @@ const getCredentials = async (portalId) => {
     });
 
     const json = await res.json();
-    const accessToken = json?.data?.token?.access_token || null;
+    console.log("check JSON.stringify(json?.data?.token): ", JSON.stringify(json?.data?.token))
+    const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
+    console.log()
+    const accessToken = tokenDecoded.access_token || null;
     const folderId = json?.data?.folder_id || null;
 
     return { accessToken, folderId };
@@ -59,10 +63,10 @@ export default async function handler(req, res) {
       },
     });
 
-     console.log('accessToken:',accessToken);
+    console.log('accessToken:', accessToken);
 
     const folders = folderSearchRes.data.files;
-    console.log('folders:',folders);
+    console.log('folders:', folders);
     if (!folders || folders.length === 0) {
       return res.status(404).json({ error: 'Folder not found' });
     }

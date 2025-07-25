@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     } = await getCredentials(portalId);
 
     if (!accessToken) {
-      return res.status(400).json({ success: false, message: 'Không có access_token' });
+      return res.status(200).json({ success: false, message: 'Không có access_token' });
     }
 
     try {

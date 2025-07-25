@@ -72,7 +72,8 @@ export default function InstalledSuccess() {
           setStatus(`✅ ${data.message || 'Submit successfully!'}`);
           window.location.href = 'https://gdrive.nexce.io/home';
         } else {
-          window.location.href = 'https://gdrive.nexce.io/home/source?error=used';
+          // console.log("check data.message: ", data.error?.msg);
+          window.location.href = `https://gdrive.nexce.io/home/source?error=used&msg=${data.error?.msg}`;
           setStatus(`❌ ${data.error?.msg || 'Submit failed!'}`);
         }
       })

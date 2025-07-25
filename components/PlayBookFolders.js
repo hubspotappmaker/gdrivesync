@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import axios from "axios";
+import { decodeToken } from "../hellper/decode";
 
 const PlayBookFiles = () => {
   const router = useRouter();
@@ -47,7 +48,7 @@ const PlayBookFiles = () => {
   const getCredentials = async (portalId) => {
     console.log(`Mock: Attempting to get credentials for portalId: ${portalId}`);
     try {
-   
+
       const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,13 +59,14 @@ const PlayBookFiles = () => {
       console.log("Credentials API response:", json); // Log the full response for debugging
 
       // Extract the access_token from the response
-      const accessToken = json?.data?.token?.access_token || null;
+      const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
+      const accessToken = tokenDecoded.access_token || null;
 
       if (!accessToken) {
-          throw new Error("Failed to retrieve access token from credentials.");
+        throw new Error("Failed to retrieve access token from credentials.");
       }
       return { accessToken };
-      
+
     } catch (error) {
       console.error('Lỗi khi lấy credentials (Mocked):', error); // Log error for debugging
       return { accessToken: null }; // Return null accessToken on error
@@ -92,7 +94,7 @@ const PlayBookFiles = () => {
    * In a live environment, ensure you have a valid access token and folderId to make real API calls.
    */
   const getFiles = async () => {
- 
+
 
     setLoading(true); // Set loading state to true
     setError(null);    // Clear any previous errors
@@ -274,7 +276,7 @@ const PlayBookFiles = () => {
       // Re-fetch files to ensure the list is up-to-date with the newly uploaded file
       // Only call getFiles if there's an accessToken, otherwise, mock data is already handled.
       if (accessToken) {
-          await getFiles();
+        await getFiles();
       }
     } catch (err) {
       setUploadProgress(null); // Clear progress bar on error
@@ -530,7 +532,7 @@ const PlayBookFiles = () => {
                         color: '#495057'
                       }}>{index + 1}</td>
                       <td style={{
-                        padding: '1rem 0.8rem', 
+                        padding: '1rem 0.8rem',
                         borderBottom: '1px solid #dee2e6'
                       }}>
                         <a

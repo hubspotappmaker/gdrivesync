@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { decodeToken } from "../../hellper/decode";
 
 export default function ShareFilePage() {
   const [email, setEmail] = useState(""); // comma-separated string of emails
@@ -32,7 +33,8 @@ export default function ShareFilePage() {
       }
 
       const json = await res.json();
-      const accessToken = json?.data?.token?.access_token || null;
+      const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
+      const accessToken = tokenDecoded.access_token || null;
       if (!accessToken) throw new Error("Access token not found");
       return { accessToken };
     } catch (error) {
@@ -186,20 +188,20 @@ export default function ShareFilePage() {
                 status.type === "success"
                   ? "#d4edda"
                   : status.type === "error"
-                  ? "#f8d7da"
-                  : "#fff3cd",
+                    ? "#f8d7da"
+                    : "#fff3cd",
               borderColor:
                 status.type === "success"
                   ? "#c3e6cb"
                   : status.type === "error"
-                  ? "#f5c6cb"
-                  : "#ffeeba",
+                    ? "#f5c6cb"
+                    : "#ffeeba",
               color:
                 status.type === "success"
                   ? "#155724"
                   : status.type === "error"
-                  ? "#721c24"
-                  : "#856404",
+                    ? "#721c24"
+                    : "#856404",
             }}
           >
             <p>{status.message}</p>

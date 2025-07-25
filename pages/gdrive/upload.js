@@ -1,4 +1,5 @@
 import axios from "axios";
+import { decodeToken } from "../../hellper/decode";
 
 export async function getServerSideProps(context) {
   const { portalId, objectId } = context.query;
@@ -17,9 +18,10 @@ export async function getServerSideProps(context) {
     access_token = json?.data?.token?.access_token || null;
     rootFolderId = json?.data?.folder_id || null;
 
-    if (!access_token || !rootFolderId || access_token === 'default') {
-      throw new Error('Thiếu access_token hoặc folder_id hợp lệ');
-    }
+
+    const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
+    console.log("check tokenDecoded uploadjs: ", tokenDecoded);
+    access_token = tokenDecoded.access_token;
   } catch (err) {
     console.error('❌ Lỗi khi lấy token/folder_id:', err.message);
     return { notFound: true };

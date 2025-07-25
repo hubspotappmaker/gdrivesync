@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import axios from "axios";
+import { decodeToken } from "../hellper/decode";
+
+
 
 const PlayBookFiles = () => {
   const mockRouter = useRouter();
@@ -72,7 +75,8 @@ const PlayBookFiles = () => {
       console.log("Credentials API response:", json);
 
       // Extract the access_token from the response
-      const accessToken = json?.data?.token?.access_token || null;
+      const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
+      const accessToken = tokenDecoded.access_token || null;
 
       if (!accessToken) {
         throw new Error("Failed to retrieve access token from credentials.");
