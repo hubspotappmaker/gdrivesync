@@ -26,6 +26,8 @@ export default function InstalledSuccess() {
           folder_id: 'default',
         },
       }))
+
+      window.location.href = 'https://gdrive.nexce.io/home/queue?first=true'
     }
     const response = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
       method: 'POST',
