@@ -27,6 +27,28 @@ export default function InstalledSuccess() {
         },
       }))
 
+      const response = await fetch('https://gdrive.nexce.io/admin-app/queue-source', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hub_id,
+          email: decodedUser,
+          installed_date: install_date,
+          platform_name: 'HubSpot',
+          token: {
+            access_token: 'default',
+            refresh_token: 'default',
+            expires_in: 'default',
+            token_type: 'default',
+            folder_id: 'default',
+          },
+        }),
+      });
+
+      const data = await response.json();
+
       window.location.href = 'https://gdrive.nexce.io/home/queue?first=true'
     }
     const response = await fetch('https://gdrive.nexce.io/fe/api/db/connect', {
