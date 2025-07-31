@@ -407,6 +407,8 @@ const PlayBookFiles = () => {
             },
           }
         );
+
+        await axios.get(`https://gdrive.nexce.io/admin-app/log-action-upload/${portalId}`)
       } else {
         // Fallback to mock upload if no access token
         let currentProgress = 0;
