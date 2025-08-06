@@ -19,7 +19,6 @@ const getCredentials = async (portalId) => {
     const driveId = tokenDecoded.driveId || null;
     return { accessToken, folderId, driveId };
   } catch (error) {
-    console.error('Lỗi khi lấy credentials:', error);
     return { accessToken: null, folderId: null };
   }
 };
@@ -45,50 +44,73 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No root folder ID (folder_id) found for this portal' });
   }
 
-  try {
-    // 🔍 Bước 1: Tìm folder theo objectId trong folder gốc folderId
+  let folderSearchRes;
+  const headers = {
+    Authorization: `Bearer ${accessToken}`
+  };
+  if (driveId) {
+    folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+      headers,
+      params: {
+        q: `name='${objectId}' and '${folderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id, name)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true
+      }
+    });
+  } else {
 
-    //console.log('accessToken:',accessToken);
-    const folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+    folderSearchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       params: {
         q: ` mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${objectId}'`,
-        supportsAllDrives: true,
-        includeTeamDriveItems: true,
         fields: 'files(id, name)',
         driveId: driveId
       },
     });
 
-    const folders = folderSearchRes.data.files;
-    console.log('folders:', folders);
-    if (!folders || folders.length === 0) {
-      return res.status(404).json({ error: 'Folder not found' });
-    }
 
-    const folder = folders[0];
+  }
 
-    // 📁 Bước 2: Lấy danh sách file trong folder đó
-    const filesRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+  const pointFolder = folderSearchRes?.data?.files[0]?.id
+
+
+  const folders = folderSearchRes?.data?.files;
+  if (!folders || folders.length === 0) {
+    return res.status(404).json({ error: 'Folder not found' });
+  }
+
+  const folder = folders[0];
+
+  // 📁 Bước 2: Lấy danh sách file trong folder đó
+  let filesRes;
+  if (driveId) {
+    filesRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+      headers,
+      params: {
+        q: `'${pointFolder}' in parents and trashed = false`,
+        supportsAllDrives: true,
+        includeTeamDriveItems: true,
+        fields: 'files(id, name, mimeType, webViewLink, createdTime)',
       },
+    });
+  } else {
+    filesRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+      headers,
       params: {
         q: `'${folder.id}' in parents and trashed = false`,
         supportsAllDrives: true,
         includeTeamDriveItems: true,
         fields: 'files(id, name, mimeType, webViewLink, createdTime)',
-        driveId: driveId
       },
     });
-
-    const files = filesRes.data.files || [];
-
-    return res.status(200).json({ folder, files });
-  } catch (err) {
-    console.error('Lỗi khi tìm folder hoặc lấy file:', err.message);
-    return res.status(500).json({ error: 'Internal server error', detail: err.message });
   }
+
+
+  const files = filesRes?.data?.files || [];
+
+  return res.status(200).json({ folder, files });
+
 }

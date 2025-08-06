@@ -73,7 +73,7 @@ async function updateCredentials(portalId, accessToken, refreshToken, folderId, 
     });
 
     const result = await res.json();
-    console.log('✅ Token mới đã lưu vào DB:', result);
+    //console.log('✅ Token mới đã lưu vào DB:', result);
   } catch (err) {
     console.error('❌ Lỗi khi lưu token mới:', err.message);
   }

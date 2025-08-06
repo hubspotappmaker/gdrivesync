@@ -1,4 +1,4 @@
-console.log("✅ Đã load next.config.js");
+//console.log("✅ Đã load next.config.js");
 
 const path = require('path');
 

@@ -85,7 +85,7 @@ export default function InstalledSuccess() {
     sendData({ hub_id, user, install_date })
       .then(response => {
         const { ok, status, data } = response;
-        console.log("check status : ", status)
+        //console.log("check status : ", status)
         if (data.error?.msg === 'Unauthorized') {
           // Nếu server trả về 401 Unauthorized
           window.location.href = 'https://gdrive.nexce.io/authen';
@@ -96,7 +96,7 @@ export default function InstalledSuccess() {
           setStatus(`✅ ${data.message || 'Submit successfully!'}`);
           window.location.href = 'https://gdrive.nexce.io/home';
         } else {
-          // console.log("check data.message: ", data.error?.msg);
+          // //console.log("check data.message: ", data.error?.msg);
           window.location.href = `https://gdrive.nexce.io/home/source?error=used&msg=${data.error?.msg}`;
           setStatus(`❌ ${data.error?.msg || 'Submit failed!'}`);
         }

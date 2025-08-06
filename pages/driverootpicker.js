@@ -81,7 +81,7 @@ const App = () => {
     const handleCreateFolder = async () => {
         if (!newFolderName) return;
         if (driveId) {
-            console.log("co driveId");
+            //console.log("co driveId");
             try {
                 const res = await window.gapi.client.drive.files.create({
                     resource: {
@@ -103,7 +103,7 @@ const App = () => {
                 setNewFolderName('');
             }
         } else {
-            console.log("0 driveId");
+            //console.log("0 driveId");
             try {
                 const res = await window.gapi.client.drive.files.create({
                     resource: {
@@ -143,9 +143,9 @@ const App = () => {
     useEffect(() => {
         const { access_token, refresh_token, driveId } = getQueryParams();
         if (!access_token) return showMessage('No access_token');
-        console.log("check getQueryParams: ", getQueryParams())
-        console.log("check refresh_token: ", refresh_token);
-        console.log("check driveId: ", driveId);
+        //console.log("check getQueryParams: ", getQueryParams())
+        //console.log("check refresh_token: ", refresh_token);
+        //console.log("check driveId: ", driveId);
         setAccessToken(access_token);
         setDriveId(driveId);
         const dataToWrite = {

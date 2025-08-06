@@ -26,7 +26,8 @@ export async function getServerSideProps(context) {
     rootFolderId = tokenDecoded.folder_id
     access_token = tokenDecoded.access_token;
     driveId = tokenDecoded.driveId;
-    console.log("check rootFolderId: ", rootFolderId)
+    // //console.log("check rootFolderId: ", rootFolderId)
+    // //console.log("check driveId: ", driveId)
   } catch (err) {
     console.error('❌ Lỗi khi lấy token/folder_id:', err.message);
     return { notFound: true };
@@ -36,29 +37,48 @@ export async function getServerSideProps(context) {
     Authorization: `Bearer ${access_token}`
   };
 
-  try {
-    const folderName = objectId || 'default';
+  //console.log("check access_token: ", access_token);
+  let searchRes;
+  const folderName = objectId || 'default';
+  if (driveId) {
+    //console.log
+    searchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+      headers,
+      params: {
+        q: `name='${folderName}' and '${rootFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id, name)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true
+      }
+    });
+    console.log("check searchRes: ", searchRes);
 
-    const searchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
+
+  } else {
+    searchRes = await axios.get('https://www.googleapis.com/drive/v3/files', {
       headers,
       params: {
         q: `'${rootFolderId}' in parents and name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed = false`,
         fields: 'files(id, name)'
       }
     });
-    console.log("check searchRes: ", searchRes);
-    let folderId;
 
-    if (searchRes.data.files.length > 0) {
-      folderId = searchRes.data.files[0].id;
-    } else {
+
+  }
+
+  let folderId;
+
+  if (searchRes.data.files.length > 0) {
+    folderId = searchRes.data.files[0].id;
+  } else {
+    console.log("check searchRes.data: ", searchRes.data)
+    if (driveId) {
       const createRes = await axios.post(
-        'https://www.googleapis.com/drive/v3/files',
+        'https://www.googleapis.com/drive/v3/files?supportsAllDrives=true',
         {
           name: folderName,
           mimeType: 'application/vnd.google-apps.folder',
-          parents: [rootFolderId],
-          driveId: driveId
+          parents: [rootFolderId]
         },
         {
           headers: {
@@ -68,19 +88,32 @@ export async function getServerSideProps(context) {
         }
       );
       folderId = createRes.data.id;
-
+    } else {
+      const createRes = await axios.post(
+        'https://www.googleapis.com/drive/v3/files',
+        {
+          name: folderName,
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: [rootFolderId]
+        },
+        {
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      folderId = createRes.data.id;
     }
 
-    return {
-      redirect: {
-        destination: `https://gdrive.nexce.io/fe/list?folderId=${folderId}&portalId=${portalId}&objectId=${objectId}`,
-        permanent: false
-      }
-    };
-  } catch (err) {
-    console.error('❌ Lỗi khi xử lý thư mục:', err.message);
-    // return { notFound: true };
   }
+
+  return {
+    redirect: {
+      destination: `https://gdrive.nexce.io/fe/list?folderId=${folderId}&portalId=${portalId}&objectId=${objectId}`,
+      permanent: false
+    }
+  };
 }
 
 // ✅ Default export là một React Component (bắt buộc trong Next.js)

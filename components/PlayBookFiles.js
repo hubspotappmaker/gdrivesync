@@ -51,7 +51,7 @@ const PlayBookFiles = () => {
     // Prevent default anchor behavior to demonstrate that this function is called.
     // In a real app, this might navigate or open a custom viewer.
     e.preventDefault();
-    console.log("Mock: Handling Google Drive shortcut link click.");
+    //console.log("Mock: Handling Google Drive shortcut link click.");
     // For demonstration, open the link in a new tab manually
     window.open(e.currentTarget.href, '_blank', 'noopener,noreferrer');
   };
@@ -63,7 +63,7 @@ const PlayBookFiles = () => {
    * @returns {Promise<{accessToken: string|null}>} - An object containing the access token.
    */
   const getCredentials = async (portalId) => {
-    console.log(`Attempting to get credentials for portalId: ${portalId}`);
+    //console.log(`Attempting to get credentials for portalId: ${portalId}`);
     try {
       const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
         method: 'POST',
@@ -72,7 +72,7 @@ const PlayBookFiles = () => {
       });
 
       const json = await res.json();
-      console.log("Credentials API response:", json);
+      //console.log("Credentials API response:", json);
 
       // Extract the access_token from the response
       const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
@@ -90,7 +90,7 @@ const PlayBookFiles = () => {
   };
 
   const getRootFolder = async (portalId) => {
-    console.log(`Attempting to get credentials for portalId: ${portalId}`);
+    //console.log(`Attempting to get credentials for portalId: ${portalId}`);
     try {
       const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
         method: 'POST',
@@ -99,7 +99,7 @@ const PlayBookFiles = () => {
       });
 
       const json = await res.json();
-      console.log("Credentials API response:", json);
+      //console.log("Credentials API response:", json);
 
       // Extract the access_token from the response
       const root_folder = json?.data?.folder_id || null;
@@ -538,7 +538,7 @@ const PlayBookFiles = () => {
     if (typeof window !== 'undefined') {
       // Cách 1: dùng history.state.idx (Next.js/React Router sẽ có trường này)
       const idx = window.history.state?.idx;
-      console.log("check window.history.length, ", window.history.length);
+      //console.log("check window.history.length, ", window.history.length);
       if (typeof idx === 'number') {
         setCanGoBack(idx > 0);
       } else {
@@ -601,7 +601,7 @@ const PlayBookFiles = () => {
             params: { supportsAllDrives: true },
           }
         );
-        console.log("Folder created:", response.data);
+        //console.log("Folder created:", response.data);
       } else {
         // Mock creation if no access token
         await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay

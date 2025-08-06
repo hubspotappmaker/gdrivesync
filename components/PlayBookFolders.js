@@ -33,7 +33,7 @@ const PlayBookFiles = () => {
     // Prevent default anchor behavior to demonstrate that this function is called.
     // In a real app, this might navigate or open a custom viewer.
     e.preventDefault();
-    console.log("Mock: Handling Google Drive shortcut link click.");
+    //console.log("Mock: Handling Google Drive shortcut link click.");
     // For demonstration, open the link in a new tab manually
     window.open(e.currentTarget.href, '_blank', 'noopener,noreferrer');
   };
@@ -46,7 +46,7 @@ const PlayBookFiles = () => {
    * @returns {Promise<{accessToken: string|null}>} - An object containing the access token.
    */
   const getCredentials = async (portalId) => {
-    console.log(`Mock: Attempting to get credentials for portalId: ${portalId}`);
+    //console.log(`Mock: Attempting to get credentials for portalId: ${portalId}`);
     try {
 
       const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
@@ -56,7 +56,7 @@ const PlayBookFiles = () => {
       });
 
       const json = await res.json();
-      console.log("Credentials API response:", json); // Log the full response for debugging
+      //console.log("Credentials API response:", json); // Log the full response for debugging
 
       // Extract the access_token from the response
       const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
