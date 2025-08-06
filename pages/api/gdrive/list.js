@@ -13,13 +13,11 @@ const getCredentials = async (portalId) => {
     });
 
     const json = await res.json();
-    console.log("check JSON.stringify(json?.data?.token): ", JSON.stringify(json?.data?.token))
     const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
-    console.log()
     const accessToken = tokenDecoded.access_token || null;
-    const folderId = json?.data?.folder_id || null;
-
-    return { accessToken, folderId };
+    const folderId = tokenDecoded.folder_id || null;
+    const driveId = tokenDecoded.driveId || null;
+    return { accessToken, folderId, driveId };
   } catch (error) {
     console.error('Lỗi khi lấy credentials:', error);
     return { accessToken: null, folderId: null };
@@ -37,7 +35,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing portalId or objectId' });
   }
 
-  const { accessToken, folderId } = await getCredentials(portalId);
+  const { accessToken, folderId, driveId } = await getCredentials(portalId);
 
   if (!accessToken || accessToken === 'default') {
     return res.status(401).json({ error: 'Unauthorized - No valid access token found' });
@@ -56,14 +54,13 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${accessToken}`,
       },
       params: {
-        q: `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${objectId}'`,
+        q: ` mimeType = 'application/vnd.google-apps.folder' and trashed = false and name = '${objectId}'`,
         supportsAllDrives: true,
         includeTeamDriveItems: true,
         fields: 'files(id, name)',
+        driveId: driveId
       },
     });
-
-    console.log('accessToken:', accessToken);
 
     const folders = folderSearchRes.data.files;
     console.log('folders:', folders);
@@ -83,6 +80,7 @@ export default async function handler(req, res) {
         supportsAllDrives: true,
         includeTeamDriveItems: true,
         fields: 'files(id, name, mimeType, webViewLink, createdTime)',
+        driveId: driveId
       },
     });
 

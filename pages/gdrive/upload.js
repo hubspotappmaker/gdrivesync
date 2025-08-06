@@ -6,6 +6,7 @@ export async function getServerSideProps(context) {
 
   let access_token = null;
   let rootFolderId = null;
+  let driveId = null;
 
   try {
     const res = await fetch('https://gdrive.nexce.io/fe/api/db/get', {
@@ -16,12 +17,16 @@ export async function getServerSideProps(context) {
 
     const json = await res.json();
     access_token = json?.data?.token?.access_token || null;
-    rootFolderId = json?.data?.folder_id || null;
+
+
 
 
     const tokenDecoded = JSON.parse(decodeToken((json?.data?.token)))
-    console.log("check tokenDecoded uploadjs: ", tokenDecoded);
+
+    rootFolderId = tokenDecoded.folder_id
     access_token = tokenDecoded.access_token;
+    driveId = tokenDecoded.driveId;
+    console.log("check rootFolderId: ", rootFolderId)
   } catch (err) {
     console.error('❌ Lỗi khi lấy token/folder_id:', err.message);
     return { notFound: true };
@@ -41,7 +46,7 @@ export async function getServerSideProps(context) {
         fields: 'files(id, name)'
       }
     });
-
+    console.log("check searchRes: ", searchRes);
     let folderId;
 
     if (searchRes.data.files.length > 0) {
@@ -52,7 +57,8 @@ export async function getServerSideProps(context) {
         {
           name: folderName,
           mimeType: 'application/vnd.google-apps.folder',
-          parents: [rootFolderId]
+          parents: [rootFolderId],
+          driveId: driveId
         },
         {
           headers: {
@@ -73,7 +79,7 @@ export async function getServerSideProps(context) {
     };
   } catch (err) {
     console.error('❌ Lỗi khi xử lý thư mục:', err.message);
-    return { notFound: true };
+    // return { notFound: true };
   }
 }
 

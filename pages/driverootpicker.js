@@ -150,7 +150,8 @@ const App = () => {
         setDriveId(driveId);
         const dataToWrite = {
             access_token,
-            refresh_token
+            refresh_token,
+            driveId
         };
 
         localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
