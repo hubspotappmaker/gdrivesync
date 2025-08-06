@@ -32,7 +32,7 @@ const App = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
     const [centerMessage, setCenterMessage] = useState(null);
-
+    const [driveId, setDriveId] = useState(null);
     const showMessage = (msg) => {
         setCenterMessage(msg);
         setTimeout(() => setCenterMessage(null), 1000);
@@ -57,10 +57,17 @@ const App = () => {
     const loadGoogleDriveFolders = async () => {
         setLoading(true);
         try {
-            const res = await window.gapi.client.drive.files.list({
+            const listOptions = {
                 q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
                 fields: 'files(id, name)',
-            });
+            };
+            if (driveId) {
+                listOptions.supportsAllDrives = true;
+                listOptions.includeItemsFromAllDrives = true;
+                listOptions.driveId = driveId;
+            }
+
+            const res = await window.gapi.client.drive.files.list(listOptions);
             setFolders(res.result.files);
             setFilteredFolders(res.result.files);
         } catch (err) {
@@ -70,28 +77,56 @@ const App = () => {
         }
     };
 
+
     const handleCreateFolder = async () => {
         if (!newFolderName) return;
-        try {
-            const res = await window.gapi.client.drive.files.create({
-                resource: {
-                    name: newFolderName,
-                    mimeType: 'application/vnd.google-apps.folder',
-                },
-                fields: 'id, name',
-            });
-            const newFolder = res.result;
-            const updatedFolders = [...folders, newFolder];
-            setFolders(updatedFolders);
-            handleSearch(searchTerm, updatedFolders);
-            showMessage(`✅ Created: ${res.result.name}`);
-        } catch (err) {
-            showMessage('❌ Failed to create folder');
-        } finally {
-            setNewFolderName('');
-            setIsModalOpen(false);
+        if (driveId) {
+            console.log("co driveId");
+            try {
+                const res = await window.gapi.client.drive.files.create({
+                    resource: {
+                        name: newFolderName,
+                        mimeType: 'application/vnd.google-apps.folder',
+                        parents: [driveId],
+                    },
+                    fields: 'id, name, webViewLink',
+                    supportsAllDrives: true
+                });
+                const newFolder = res.result;
+                const updatedFolders = [...folders, newFolder];
+                setFolders(updatedFolders);
+                handleSearch(searchTerm, updatedFolders);
+                showMessage(`✅ Created: ${res.result.name}`);
+            } catch (err) {
+                showMessage('❌ Failed to create folder');
+            } finally {
+                setNewFolderName('');
+            }
+        } else {
+            console.log("0 driveId");
+            try {
+                const res = await window.gapi.client.drive.files.create({
+                    resource: {
+                        name: newFolderName,
+                        mimeType: 'application/vnd.google-apps.folder',
+                    },
+                    fields: 'id, name',
+                });
+                const newFolder = res.result;
+                const updatedFolders = [...folders, newFolder];
+                setFolders(updatedFolders);
+                handleSearch(searchTerm, updatedFolders);
+                showMessage(`✅ Created: ${res.result.name}`);
+            } catch (err) {
+                showMessage('❌ Failed to create folder');
+            } finally {
+                setNewFolderName('');
+                setIsModalOpen(false);
+            }
         }
+
     };
+
 
     const handleSelect = (folderId) => {
         window.location.href = `/fe/authsuccess?folder_id=${folderId}`;
@@ -106,12 +141,13 @@ const App = () => {
     };
 
     useEffect(() => {
-        const { access_token, refresh_token } = getQueryParams();
+        const { access_token, refresh_token, driveId } = getQueryParams();
         if (!access_token) return showMessage('No access_token');
         console.log("check getQueryParams: ", getQueryParams())
         console.log("check refresh_token: ", refresh_token);
+        console.log("check driveId: ", driveId);
         setAccessToken(access_token);
-
+        setDriveId(driveId);
         const dataToWrite = {
             access_token,
             refresh_token
