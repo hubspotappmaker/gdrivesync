@@ -141,7 +141,7 @@ const App = () => {
     };
 
     useEffect(() => {
-        const { access_token, refresh_token, driveId } = getQueryParams();
+        const { access_token, refresh_token, driveId, jsonFile } = getQueryParams();
         if (!access_token) return showMessage('No access_token');
         //console.log("check getQueryParams: ", getQueryParams())
         //console.log("check refresh_token: ", refresh_token);
@@ -151,7 +151,8 @@ const App = () => {
         const dataToWrite = {
             access_token,
             refresh_token,
-            driveId
+            driveId,
+            jsonFile
         };
 
         localStorage.setItem('gdrivetoken', JSON.stringify(dataToWrite));
