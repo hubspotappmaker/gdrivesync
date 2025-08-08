@@ -56,30 +56,64 @@ const App = () => {
 
     const loadGoogleDriveFolders = async () => {
         setLoading(true);
-        try {
-            const listOptions = {
-                q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
-                fields: 'files(id, name)',
-            };
-            if (driveId) {
-                listOptions.supportsAllDrives = true;
-                listOptions.includeItemsFromAllDrives = true;
-                listOptions.driveId = driveId;
+        const { access_token, refresh_token, driveId, jsonFile } = getQueryParams();
+        if (driveId) {
+            try {
+
+                const listOptions = {
+                    corpora: 'drive',
+                    driveId,
+                    includeItemsFromAllDrives: true,
+                    supportsAllDrives: true,
+                    q: `'${driveId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                    fields: 'nextPageToken, files(id,name)',
+                    pageSize: 1000,
+                };
+
+                let all = [], pageToken;
+                do {
+                    const res = await gapi.client.drive.files.list({ ...listOptions, pageToken });
+                    all = all.concat(res.result.files || []);
+                    pageToken = res.result.nextPageToken;
+                } while (pageToken);
+
+                setFolders(all);
+                setFilteredFolders(all);
+            } catch (err) {
+                showMessage('❌ Failed to load folders');
+            } finally {
+                setLoading(false);
             }
 
-            const res = await window.gapi.client.drive.files.list(listOptions);
-            setFolders(res.result.files);
-            setFilteredFolders(res.result.files);
-        } catch (err) {
-            showMessage('❌ Failed to load folders');
-        } finally {
-            setLoading(false);
+        }
+        else {
+            setLoading(true);
+            try {
+                const listOptions = {
+                    q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+                    fields: 'files(id, name)',
+                };
+                if (driveId) {
+                    listOptions.supportsAllDrives = true;
+                    listOptions.includeItemsFromAllDrives = true;
+                    listOptions.driveId = driveId;
+                }
+
+                const res = await window.gapi.client.drive.files.list(listOptions);
+                setFolders(res.result.files);
+                setFilteredFolders(res.result.files);
+            } catch (err) {
+                showMessage('❌ Failed to load folders');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
 
     const handleCreateFolder = async () => {
         if (!newFolderName) return;
+        const { access_token, refresh_token, driveId, jsonFile } = getQueryParams();
         if (driveId) {
             //console.log("co driveId");
             try {
