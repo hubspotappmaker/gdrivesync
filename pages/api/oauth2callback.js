@@ -4,7 +4,7 @@ import fs from 'fs'; // ✅ import fs
 import path from 'path'; // ✅ import path
 
 export default async function handler(req, res) {
-  const { code } = req.query;
+  const { code, state } = req.query;
 
   if (!code) {
     return res.redirect('https://gdrive.nexce.io/home/source');
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
     // ✅ Redirect về client với token (hoặc chỉ báo thành công nếu muốn bảo mật hơn)
     const redirectClient = 'https://gdrive.nexce.io/fe/driverootpicker';
-    const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}`;
+    const tokenUrl = `${redirectClient}?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}&token_type=${token_type}&timestamp=${new Date().toISOString()}&state=${state}`;
     const encodedTokenUrl = encodeURIComponent(tokenUrl);
     res.redirect(`https://gdrive.nexce.io/home/root?iframe=${encodedTokenUrl}`);
 

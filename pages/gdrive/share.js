@@ -78,7 +78,7 @@ export default function ShareFilePage() {
     for (const singleEmail of emailsToShare) {
       try {
         const res = await fetch(
-          `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,
+          `https://www.googleapis.com/drive/v3/files/${fileId}/permissions?supportsAllDrives=true`,
           {
             method: "POST",
             headers: {
@@ -92,6 +92,7 @@ export default function ShareFilePage() {
             }),
           }
         );
+
 
         const data = await res.json();
 
